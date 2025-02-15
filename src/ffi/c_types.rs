@@ -22,6 +22,7 @@ pub type VkFlags64 = u64;
 
 pub mod enums {
     #[repr(transparent)]
+    #[derive(Debug)]
     pub struct VkResult {
         bits: i32,
     }
@@ -139,7 +140,7 @@ pub mod rect {
     //! Contains type definitions for rectangle objects.
     use crate::ffi::c_types::{
         extents::VkExtent2D,
-        offsets::VkOffset2D
+        offsets::VkOffset2D,
     };
 
     /// Represents a 2D rectangle.
@@ -151,21 +152,82 @@ pub mod rect {
 }
 
 pub mod fn_ptrs {
-    //! Contains type definitions for function pointers.
+    //! Contains function pointers that may or may not conform with Vulkan's API, but are
+    //! The function pointers not defined in the Vulkan API are necessary for FFI
+    //! compatability between C and Rust.
+    //!
+    //! Due to the strict typing within Rust, creating a function pointer that supports an
+    //! arbitrary amount of arguments in the function's signature is not possible. Instead, we
+    //! need to create function pointer types for all different possible pointers.
+    //!
+    //! For simplicity, despite this being non-C code, these type definitions will try to follow
+    //! the Vulkan naming conventions as closely as possible. They will also be instead prefixed
+    //! with `PFN_vkrs`, instead of `PFN_vk`.
+    use crate::ffi::c_types::enums::VkResult;
+
+    /// Macro to simplify creation of function pointers and extern functions which call the
+    /// Vulkan API.
+    ///
+    /// This macro should only be used for generating function pointers and function definitions for
+    /// function which need a `vkrs`-scoped return type. These return types are prefixed with
+    /// `PFN_vkrs`, and are used for producing strictly-typed function pointers based on
+    /// Vulkan API functions.
+    ///
+    /// This simplifies the use of `PFN_vkVoidFunction`, since all Vulkan functions should exist
+    ///
+    macro_rules! vkrs_create_function_with_typedef {
+            (
+                $func_name:ident,
+                $ptr_name:ident,
+                ($($arg_name:ident : $arg_type:ty),*)
+                -> $ret_type:ty
+            ) => {
+                #[allow(non_camel_case_types, non_snake_case)]
+                pub type $ptr_name = unsafe extern "system" fn($($arg_name: $arg_type),*) -> $ret_type;
+
+                unsafe extern "C" {
+                    #[allow(non_camel_case_types, non_snake_case)]
+                    pub fn $func_name($($arg_name: $arg_type),*) -> $ret_type;
+                }
+            };
+        }
+
+    /// A standard function pointer for use with the `vkGetProcAddrInfo` function.
+    ///
+    /// This type represents a generic function pointer within Vulkan.
+    ///
+    /// This type is mostly a base type used as a placeholder for casting to other function pointer
+    /// types.
     #[allow(non_camel_case_types)]
     pub type PFN_vkVoidFunction = unsafe extern "system" fn();
+
+    // Create the definitions for vkEnumerateInstanceVersion.
+    vkrs_create_function_with_typedef!(
+        vkEnumerateInstanceVersion,
+        PFN_vkrsEnumerateInstanceVersion,
+        (
+            p_api_version: *mut u32
+        ) -> VkResult
+    );
 }
 
 #[allow(non_camel_case_types)]
 pub mod objects {
     use paste;
+
     /// Equivalent to the C-Style `VK_DEFINE_HANDLE`. This creates a struct with the provided
     /// name, and a type which is a mutable pointer to the underlying struct.
+    ///
+    /// Each struct is assigned one member, `_nul`. This is because empty structs are not safe to
+    /// pass through FFI, since the size of them cannot be determined. Giving each struct one member
+    /// which takes up zero allows the compiler to understand what size the struct needs to be.
     macro_rules! vk_define_handle {
         ($name:ident) => {
             paste::paste! {
                 #[repr(C)]
-                pub struct [<$name _T>];
+                pub struct [<$name _T>] {
+                    _nul: [u8; 0]
+                }
 
                 pub type $name = *mut [<$name _T>];
             }
@@ -173,4 +235,6 @@ pub mod objects {
     }
 
     vk_define_handle!(VkInstance);
+    vk_define_handle!(VkDevice);
+    vk_define_handle!(VkEvent);
 }
