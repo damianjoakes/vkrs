@@ -1,0 +1,9 @@
+[package]
+name = "vkrs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitflags = "2.8.0"
+libc = "0.2.169"
+paste = "1.0.15"
