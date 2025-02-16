@@ -33,7 +33,7 @@ unsafe extern "C" {
         pCreateInfo: *const VkInstanceCreateInfo,
         pAllocator: *const VkAllocationCallbacks,
         pInstance: *mut VkInstance,
-    );
+    ) -> VkResult;
 
     /// Create a new device instance
     ///
@@ -72,6 +72,33 @@ unsafe extern "C" {
         pCreateInfo: *const VkDeviceCreateInfo,
         pAllocator: *const VkAllocationCallbacks,
         pDevice: *mut VkDevice
+    ) -> VkResult;
+
+    /// Enumerates the physical devices accessible to a Vulkan instance
+    ///
+    /// # Parameters
+    /// instance is a handle to a Vulkan instance previously created with vkCreateInstance.
+    ///
+    /// pPhysicalDeviceCount is a pointer to an integer related to the number of physical devices available or queried, as described below.
+    ///
+    /// pPhysicalDevices is either NULL or a pointer to an array of VkPhysicalDevice handles.
+    ///
+    /// # Description
+    /// If `pPhysicalDevices` is NULL, then the number of physical devices available is returned in
+    /// `pPhysicalDeviceCount`. Otherwise, `pPhysicalDeviceCount` must point to a variable set by the
+    /// user to the number of elements in the `pPhysicalDevices` array, and on return the variable is
+    /// overwritten with the number of handles actually written to `pPhysicalDevices`. If
+    /// `pPhysicalDeviceCount` is less than the number of physical devices available, at most
+    /// `pPhysicalDeviceCount` structures will be written. If `pPhysicalDeviceCount` is smaller than the
+    /// number of physical devices available, `VK_INCOMPLETE` will be returned instead of `VK_SUCCESS`,
+    /// to indicate that not all the available physical devices were returned.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkenumeratephysicaldevices3
+    #[allow(non_snake_case)]
+    pub fn vkEnumeratePhysicalDevices(
+        instance: VkInstance,
+        pPhysicalDeviceCount: *mut u32,
+        pPhysicalDevices: *mut VkPhysicalDevice
     ) -> VkResult;
 
     pub fn vkResetEvent(

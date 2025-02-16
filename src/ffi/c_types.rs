@@ -110,6 +110,7 @@ pub mod enums {
 
     /// The VkStructureType enum. Contains structure types within Vulkan.
     #[repr(transparent)]
+    #[derive(Debug)]
     pub struct VkStructureType {
         bits: i32,
     }
@@ -840,7 +841,7 @@ pub mod fn_ptrs {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkAllocationFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkAllocationFunction = unsafe extern "system" fn(
+    pub type PFN_vkAllocationFunction = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
         alignment: size_t,
@@ -886,7 +887,7 @@ pub mod fn_ptrs {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkReallocationFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkReallocationFunction = unsafe extern "system" fn(
+    pub type PFN_vkReallocationFunction = unsafe fn(
         pUserData: *mut c_void,
         pOriginal: *mut c_void,
         size: size_t,
@@ -909,7 +910,7 @@ pub mod fn_ptrs {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkFreeFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkFreeFunction = unsafe extern "system" fn(
+    pub type PFN_vkFreeFunction = unsafe fn(
         pUserData: *mut c_void,
         pMemory: *mut c_void,
     );
@@ -933,7 +934,7 @@ pub mod fn_ptrs {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalAllocationNotification
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkInternalAllocationNotification = unsafe extern "system" fn(
+    pub type PFN_vkInternalAllocationNotification = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
         allocationType: VkInternalAllocationType,
@@ -956,7 +957,7 @@ pub mod fn_ptrs {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalFreeNotification
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkInternalFreeNotification = unsafe extern "system" fn(
+    pub type PFN_vkInternalFreeNotification = fn(
         pUserData: *mut c_void,
         size: size_t,
         allocationType: VkInternalAllocationType,
@@ -995,8 +996,9 @@ pub mod objects {
         ($name:ident) => {
             paste::paste! {
                 #[repr(C)]
+                #[derive(Debug)]
                 pub struct [<$name _T>] {
-                    _nul: [u8; 0]
+                    _nul: [u8; 64]
                 }
 
                 pub type $name = *mut [<$name _T>];
@@ -1014,27 +1016,28 @@ pub mod objects {
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkApplicationInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        pApplicationName: *const c_char,
-        applicationVersion: u32,
-        pEngineName: *const c_char,
-        engineVersion: u32,
-        apiVersion: u32,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub pApplicationName: *const c_char,
+        pub applicationVersion: u32,
+        pub pEngineName: *const c_char,
+        pub engineVersion: u32,
+        pub apiVersion: u32,
     }
 
     /// Object which specifies the parameters of a newly created instance.
     #[repr(C)]
     #[allow(non_snake_case)]
+    #[derive(Debug)]
     pub struct VkInstanceCreateInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        flags: VkInstanceCreateFlags,
-        pApplicationInfo: *const VkApplicationInfo,
-        enabledLayerCount: u32,
-        ppEnabledLayerNames: *const *const c_char,
-        enabledExtensionCount: u32,
-        ppEnabledExtensionNames: *const *const c_char,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkInstanceCreateFlags,
+        pub pApplicationInfo: *const VkApplicationInfo,
+        pub enabledLayerCount: u32,
+        pub ppEnabledLayerNames: *const *const c_char,
+        pub enabledExtensionCount: u32,
+        pub ppEnabledExtensionNames: *const *const c_char,
     }
 
     /// Structure specifying parameters of a newly created device queue
@@ -1061,12 +1064,12 @@ pub mod objects {
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkDeviceQueueCreateInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        flags: VkDeviceQueueCreateFlags,
-        queueFamilyIndex: u32,
-        queueCount: u32,
-        pQueueProperties: *const f32,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkDeviceQueueCreateFlags,
+        pub queueFamilyIndex: u32,
+        pub queueCount: u32,
+        pub pQueueProperties: *const f32,
     }
 
     /// Structure describing the fine-grained features that can be supported by an implementation.
@@ -1711,16 +1714,16 @@ pub mod objects {
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkDeviceCreateInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        flags: VkDeviceCreateFlags,
-        queueCreateInfoCount: u32,
-        pQueueCreateInfos: *const VkDeviceQueueCreateInfo,
-        enabledLayerCount: u32,
-        ppEnabledLayerNames: *const *const c_char,
-        enabledExtensionCount: u32,
-        ppEnabledExtensionNames: *const *const c_char,
-        pEnabledFeatures: *const VkPhysicalDeviceFeatures,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkDeviceCreateFlags,
+        pub queueCreateInfoCount: u32,
+        pub pQueueCreateInfos: *const VkDeviceQueueCreateInfo,
+        pub enabledLayerCount: u32,
+        pub ppEnabledLayerNames: *const *const c_char,
+        pub enabledExtensionCount: u32,
+        pub ppEnabledExtensionNames: *const *const c_char,
+        pub pEnabledFeatures: *const VkPhysicalDeviceFeatures,
     }
 
     /// Structure containing callback function pointers for memory allocation.
@@ -1752,11 +1755,11 @@ pub mod objects {
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkAllocationCallbacks {
-        pUserDate: *mut c_void,
-        pfnAllocation: PFN_vkAllocationFunction,
-        pfnReallocation: PFN_vkReallocationFunction,
-        pfnFree: PFN_vkFreeFunction,
-        pfnInternalAllocation: PFN_vkInternalAllocationNotification,
-        pfnInternalFree: PFN_vkInternalFreeNotification,
+        pub pUserData: *mut c_void,
+        pub pfnAllocation: PFN_vkAllocationFunction,
+        pub pfnReallocation: PFN_vkReallocationFunction,
+        pub pfnFree: PFN_vkFreeFunction,
+        pub pfnInternalAllocation: PFN_vkInternalAllocationNotification,
+        pub pfnInternalFree: PFN_vkInternalFreeNotification,
     }
 }
