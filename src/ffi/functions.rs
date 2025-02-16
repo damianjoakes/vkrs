@@ -2,9 +2,7 @@ use libc::c_char;
 
 use crate::ffi::c_types::enums::VkResult;
 use crate::ffi::c_types::fn_ptrs::PFN_vkVoidFunction;
-use crate::ffi::c_types::objects::{VkAllocationCallbacks, VkDevice, VkInstanceCreateInfo};
-use crate::ffi::c_types::objects::VkEvent;
-use crate::ffi::c_types::objects::VkInstance;
+use crate::ffi::c_types::objects::*;
 
 #[link(name = "C:\\VulkanSDK\\1.4.304.0\\Lib\\vulkan-1")]
 unsafe extern "C" {
@@ -36,6 +34,45 @@ unsafe extern "C" {
         pAllocator: *const VkAllocationCallbacks,
         pInstance: *mut VkInstance,
     );
+
+    /// Create a new device instance
+    ///
+    /// # Parameters
+    /// - `physicalDevice` must be one of the device handles returned from a call to
+    ///   vkEnumeratePhysicalDevices (see Physical Device Enumeration).
+    ///
+    /// - `pCreateInfo` is a pointer to a VkDeviceCreateInfo structure containing information about
+    ///   how to create the device.
+    ///
+    /// - `pAllocator` controls host memory allocation as described in the Memory Allocation chapter.
+    ///
+    /// - `pDevice` is a pointer to a handle in which the created VkDevice is returned.
+    ///
+    /// # Description
+    /// vkCreateDevice verifies that extensions and features requested in the ppEnabledExtensionNames
+    /// and pEnabledFeatures members of pCreateInfo, respectively, are supported by the implementation.
+    /// If any requested extension is not supported, vkCreateDevice must return
+    /// VK_ERROR_EXTENSION_NOT_PRESENT. If any requested feature is not supported, vkCreateDevice
+    /// must return VK_ERROR_FEATURE_NOT_PRESENT. Support for extensions can be checked before
+    /// creating a device by querying vkEnumerateDeviceExtensionProperties. Support for features can
+    /// similarly be checked by querying vkGetPhysicalDeviceFeatures.
+    ///
+    /// After verifying and enabling the extensions the VkDevice object is created and returned to the
+    /// application. If a requested extension is only supported by a layer, both the layer and the
+    /// extension need to be specified at vkCreateInstance time for the creation to succeed.
+    ///
+    /// Multiple logical devices can be created from the same physical device. Logical device
+    /// creation may fail due to lack of device-specific resources (in addition to the other errors).
+    /// If that occurs, vkCreateDevice will return VK_ERROR_TOO_MANY_OBJECTS.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkCreateDevice
+    #[allow(non_snake_case)]
+    pub fn vkCreateDevice(
+        phsyicalDevice: VkPhysicalDevice,
+        pCreateInfo: *const VkDeviceCreateInfo,
+        pAllocator: *const VkAllocationCallbacks,
+        pDevice: *mut VkDevice
+    ) -> VkResult;
 
     pub fn vkResetEvent(
         device: VkDevice,

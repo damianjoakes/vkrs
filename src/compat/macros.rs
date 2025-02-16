@@ -1,7 +1,7 @@
 //! Contains macros for making code generation easier.
 
 
-/// Boilerplate code for getting the function instance address, and casting it to an underlying
+/// Boilerplate code for getting a function instance address, and casting it to an underlying
 /// compatible Rust type.
 ///
 /// `$func_type` should generally be a `vkrs`-scoped function pointer type definition.
@@ -22,13 +22,14 @@ macro_rules! vkrs_get_instance_proc_addr_ext {
     }};
 }
 
-/// Boilerplate code for getting the function instance address, and casting it to an underlying
-/// compatible Rust type.
+/// Boilerplate code for getting a function instance address for a particular device, and casting it
+/// to an underlying compatible Rust type.
 ///
 /// `$func_type` should generally be a `vkrs`-scoped function pointer type definition.
 #[macro_export]
 macro_rules! vkrs_get_device_proc_addr_ext {
     ($device:expr, $func_name:literal, $func_type:ty) => {{
+        use crate::ffi::functions::vkGetDeviceProcAddr;
         use crate::ffi::c_types::fn_ptrs::PFN_vkVoidFunction;
         use std::ffi::CString;
         use std::mem;

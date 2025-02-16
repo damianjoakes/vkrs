@@ -21,23 +21,23 @@ fn vk_get_instance_proc_test() {
     }
 }
 
-// # todo
 // This currently doesn't work. We need to create the vkCreateDevice function before we continue.
 // #[test]
 // fn vk_get_device_proc_test() {
-//     let vk_device = 1u32;
+//     let vk_device: VkDevice = unsafe { MaybeUninit::zeroed().assume_init() };
 //     let mut api_version = 0u32;
 //
 //     unsafe {
-//         let pfn = vkrs_get_device_proc_addr_ext!(
-//             vk_device,
-//             "vkEnumerateInstanceVersion",
-//             PFN_vkrsEnumerateInstanceVersion
-//         );
+//         // let result = vkCreateDevice();
+//         // let pfn = vkrs_get_device_proc_addr_ext!(
+//         //     vk_device,
+//         //     "vkEnumerateDeviceVersion",
+//         //     PFN_vkrsEnumerateInstanceVersion
+//         // );
 //
-//         let a: i32 = pfn(&mut api_version).into();
-//
-//         println!("{}", a);
-//         println!("{}", api_version);
+//         // let a: i32 = pfn(&mut api_version).into();
+//         //
+//         // println!("{}", a);
+//         // println!("{}", api_version);
 //     }
 // }
