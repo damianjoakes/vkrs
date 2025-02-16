@@ -13,4 +13,5 @@ then the enum members are provided as `const`s within the struct.
 ## Documentation
 *Almost* all Rustdoc comments are sourced directly from the API specification from Vulkan via LunarG's website.
 [This can be found here.](https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html) I do not claim to be the 
-original author of this documentation.
+original author of this documentation. This information is provided as-is for the sole purpose of ensuring
+extensive, easily accessible documentation.
