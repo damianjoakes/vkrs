@@ -10,21 +10,64 @@ use std::ptr::null;
 
 #[test]
 fn vk_get_instance_proc_test() {
-    let vk_instance = core::ptr::null_mut();
-    let mut api_version = 0u32;
+    let application_name = CString::new("test-application").unwrap();
+    let application_name_ptr = application_name.as_ptr();
+
+    let engine_name = CString::new("test-engine").unwrap();
+    let engine_name_ptr = engine_name.as_ptr();
+
+    let vk_application_info = VkApplicationInfo {
+        sType: VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        pNext: null(),
+        pApplicationName: application_name_ptr,
+        applicationVersion: 0,
+        pEngineName: engine_name_ptr,
+        engineVersion: 0,
+        apiVersion: 0,
+    };
+
+    let enable_extension_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+    let enable_layer_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    let vk_create_instance_info = VkInstanceCreateInfo {
+        flags: 0x00000001,
+        enabledExtensionCount: 0,
+        enabledLayerCount: 0,
+        pNext: null(),
+        pApplicationInfo: &vk_application_info,
+        sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        ppEnabledExtensionNames: enable_extension_names.as_ptr(),
+        ppEnabledLayerNames: enable_layer_names.as_ptr(),
+    };
+
+    // Create an empty, uninitialized slice of memory for the Vulkan instance.
+    let mut vk_instance: MaybeUninit<VkInstance> = MaybeUninit::uninit();
 
     unsafe {
-        let pfn = vkrs_get_instance_proc_addr_ext!(
+        // SAFETY: since the uninitialized memory is being used safely, this function will initialize
+        // the slice of memory at which the VkInstance will sit.
+        let result = vkCreateInstance(
+            &vk_create_instance_info,
+            null(),
+            vk_instance.as_mut_ptr(),
+        );
+    }
+
+    let mut vk_instance = unsafe { vk_instance.assume_init() };
+
+    let pfn = unsafe {
+        vkrs_get_instance_proc_addr_ext!(
             vk_instance,
             "vkEnumerateInstanceVersion",
             PFN_vkrsEnumerateInstanceVersion
-        );
+        )
+    };
 
-        let a: i32 = pfn(&mut api_version).into();
+    let mut api_version = 0u32;
+    let result = unsafe { pfn(&mut api_version) };
 
-        println!("{}", a);
-        println!("{}", api_version);
-    }
+    dbg!(result);
+    dbg!(api_version);
 }
 
 #[test]
@@ -49,7 +92,7 @@ fn vk_enumerate_devices_test() {
     let enable_layer_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     let vk_create_instance_info = VkInstanceCreateInfo {
-        flags: 0,
+        flags: 0x00000001,
         enabledExtensionCount: 0,
         enabledLayerCount: 0,
         pNext: null(),

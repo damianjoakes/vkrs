@@ -998,7 +998,7 @@ pub mod objects {
                 #[repr(C)]
                 #[derive(Debug)]
                 pub struct [<$name _T>] {
-                    _nul: [u8; 64]
+                    _nul: [u8; 0]
                 }
 
                 pub type $name = *mut [<$name _T>];
