@@ -17,11 +17,15 @@ pub type VkDeviceAddress = u64;
 /// A bitmask representing a collection of flags.
 pub type VkFlags = u32;
 
+pub type VkBool32 = u32;
+
 /// A 64-bit bitmask representing a collection of flags.
 pub type VkFlags64 = u64;
 
 /// Type alias for VkFlags.
 pub type VkInstanceCreateFlags = VkFlags;
+pub type VkDeviceCreateFlags = VkFlags;
+pub type VkDeviceQueueCreateFlags = VkFlags;
 
 pub mod enums {
     #[repr(transparent)]
@@ -106,6 +110,7 @@ pub mod enums {
 
     /// The VkStructureType enum. Contains structure types within Vulkan.
     #[repr(transparent)]
+    #[derive(Debug)]
     pub struct VkStructureType {
         bits: i32,
     }
@@ -797,16 +802,92 @@ pub mod fn_ptrs {
     #[allow(non_camel_case_types)]
     pub type PFN_vkVoidFunction = unsafe extern "system" fn();
 
+    /// Application-defined memory allocation function
+    ///
+    /// # Parameters
+    /// - `pUserData` is the value specified for `VkAllocationCallbacks::pUserData` in the
+    ///   allocator specified by the application.
+    ///
+    /// - `size` is the size in bytes of the requested allocation.
+    ///
+    /// - `alignment` is the requested alignment of the allocation in bytes and
+    ///   must be a power of two.
+    ///
+    /// - `allocationScope` is a `VkSystemAllocationScope` value specifying the allocation scope of the
+    ///   lifetime of the allocation, as described here.
+    ///
+    /// # Description
+    /// If pfnAllocation is unable to allocate the requested memory, it must return NULL. If the
+    /// allocation was successful, it must return a valid pointer to memory allocation containing at
+    /// least size bytes, and with the pointer value being a multiple of alignment.
+    ///
+    /// > *Note*
+    /// > Correct Vulkan operation cannot be assumed if the application does not follow these rules.
+    /// >
+    /// > For example, pfnAllocation (or pfnReallocation) could cause termination of running Vulkan
+    /// > instance(s) on a failed allocation for debugging purposes, either directly or indirectly.
+    /// > In these circumstances, it cannot be assumed that any part of any affected VkInstance
+    /// > objects are going to operate correctly (even vkDestroyInstance), and the application must
+    /// > ensure it cleans up properly via other means (e.g. process termination).
+    ///
+    /// If pfnAllocation returns NULL, and if the implementation is unable to continue correct
+    /// processing of the current command without the requested allocation, it must treat this as a
+    /// run-time error, and generate VK_ERROR_OUT_OF_HOST_MEMORY at the appropriate time for the
+    /// command in which the condition was detected, as described in Return Codes.
+    ///
+    /// If the implementation is able to continue correct processing of the current command without
+    /// the requested allocation, then it may do so, and must not generate
+    /// VK_ERROR_OUT_OF_HOST_MEMORY as a result of this failed allocation.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkAllocationFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkAllocationFunction = unsafe extern "system" fn(
+    pub type PFN_vkAllocationFunction = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
         alignment: size_t,
         allocationScope: VkSystemAllocationScope,
     );
 
+    /// Application-defined memory reallocation function
+    ///
+    /// # Parameters
+    /// - pUserData is the value specified for VkAllocationCallbacks::pUserData in the allocator
+    /// specified by the application.
+    ///
+    /// - pOriginal must be either NULL or a pointer previously returned by pfnReallocation or
+    /// pfnAllocation of a compatible allocator.
+    ///
+    /// - size is the size in bytes of the requested allocation.
+    ///
+    /// - alignment is the requested alignment of the allocation in bytes and must be a power of two.
+    ///
+    /// - allocationScope is a VkSystemAllocationScope value specifying the allocation scope of the
+    /// lifetime of the allocation, as described here.
+    ///
+    /// # Description
+    /// pfnReallocation must return an allocation with enough space for size bytes, and the contents
+    /// of the original allocation from bytes zero to min(original size, new size) - 1 must be
+    /// preserved in the returned allocation. If size is larger than the old size, the contents of
+    /// the additional space are undefined. If satisfying these requirements involves creating a new
+    /// allocation, then the old allocation should be freed.
+    ///
+    /// If pOriginal is NULL, then pfnReallocation must behave equivalently to a call to
+    /// PFN_vkAllocationFunction with the same parameter values (without pOriginal).
+    ///
+    /// If size is zero, then pfnReallocation must behave equivalently to a call to
+    /// PFN_vkFreeFunction with the same pUserData parameter value, and pMemory equal to pOriginal.
+    ///
+    /// If pOriginal is non-NULL, the implementation must ensure that alignment is equal to the
+    /// alignment used to originally allocate pOriginal.
+    ///
+    /// If this function fails and pOriginal is non-NULL the application must not free the old
+    /// allocation.
+    ///
+    /// pfnReallocation must follow the same rules for return values as PFN_vkAllocationFunction.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkReallocationFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkReallocationFunction = unsafe extern "system" fn(
+    pub type PFN_vkReallocationFunction = unsafe fn(
         pUserData: *mut c_void,
         pOriginal: *mut c_void,
         size: size_t,
@@ -814,22 +895,69 @@ pub mod fn_ptrs {
         allocationScope: VkSystemAllocationScope,
     );
 
+    /// Application-defined memory free function
+    ///
+    /// # Parameters
+    /// - pUserData is the value specified for `VkAllocationCallbacks::pUserData` in the allocator
+    ///   specified by the application.
+    ///
+    /// - pMemory is the allocation to be freed.
+    ///
+    /// # Description
+    /// pMemory may be NULL, which the callback must handle safely. If pMemory is non-NULL, it must
+    /// be a pointer previously allocated by pfnAllocation or pfnReallocation. The application
+    /// should free this memory.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkFreeFunction
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkFreeFunction = unsafe extern "system" fn(
+    pub type PFN_vkFreeFunction = unsafe fn(
         pUserData: *mut c_void,
         pMemory: *mut c_void,
     );
 
+    /// Application-defined memory allocation notification function
+    ///
+    /// # Parameters
+    /// - pUserData is the value specified for VkAllocationCallbacks::pUserData in the allocator
+    ///   specified by the application.
+    ///
+    /// - size is the requested size of an allocation.
+    ///
+    /// - allocationType is a VkInternalAllocationType value specifying the requested type of an
+    ///   allocation.
+    ///
+    /// - allocationScope is a VkSystemAllocationScope value specifying the allocation scope of the
+    ///   lifetime of the allocation, as described here.
+    ///
+    /// # Description
+    /// This is a purely informational callback.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalAllocationNotification
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkInternalAllocationNotification = unsafe extern "system" fn(
+    pub type PFN_vkInternalAllocationNotification = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
         allocationType: VkInternalAllocationType,
         allocationScope: VkSystemAllocationScope,
     );
 
+    /// Application-defined memory free notification function
+    ///
+    /// # Parameters
+    /// - pUserData is the value specified for VkAllocationCallbacks::pUserData in the allocator
+    ///   specified by the application.
+    ///
+    /// - size is the requested size of an allocation.
+    ///
+    /// - allocationType is a VkInternalAllocationType value specifying the requested type of an
+    ///   allocation.
+    ///
+    /// - allocationScope is a VkSystemAllocationScope value specifying the allocation scope of the
+    ///   lifetime of the allocation, as described here.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalFreeNotification
     #[allow(non_camel_case_types, non_snake_case)]
-    pub type PFN_vkInternalFreeNotification = unsafe extern "system" fn(
+    pub type PFN_vkInternalFreeNotification = fn(
         pUserData: *mut c_void,
         size: size_t,
         allocationType: VkInternalAllocationType,
@@ -850,12 +978,13 @@ pub mod fn_ptrs {
 pub mod objects {
     use std::ffi::c_void;
 
-    use libc::c_char;
+    use libc::{c_char};
     use paste;
 
-    use crate::ffi::c_types::{VkInstanceCreateFlags};
     use crate::ffi::c_types::enums::VkStructureType;
-    use crate::ffi::c_types::fn_ptrs::{PFN_vkAllocationFunction, PFN_vkFreeFunction, PFN_vkInternalAllocationNotification, PFN_vkInternalFreeNotification, PFN_vkReallocationFunction};
+    use crate::ffi::c_types::fn_ptrs::*;
+
+    use super::*;
 
     /// Equivalent to the C-Style `VK_DEFINE_HANDLE`. This creates a struct with the provided
     /// name, and a type which is a mutable pointer to the underlying struct.
@@ -867,8 +996,9 @@ pub mod objects {
         ($name:ident) => {
             paste::paste! {
                 #[repr(C)]
+                #[derive(Debug)]
                 pub struct [<$name _T>] {
-                    _nul: [u8; 0]
+                    _nul: [u8; 64]
                 }
 
                 pub type $name = *mut [<$name _T>];
@@ -879,33 +1009,721 @@ pub mod objects {
     // Define handles.
     vk_define_handle!(VkInstance);
     vk_define_handle!(VkDevice);
+    vk_define_handle!(VkPhysicalDevice);
     vk_define_handle!(VkEvent);
 
     /// Object which specifies the current application info.
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkApplicationInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        pApplicationName: *const c_char,
-        applicationVersion: u32,
-        pEngineName: *const c_char,
-        engineVersion: u32,
-        apiVersion: u32,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub pApplicationName: *const c_char,
+        pub applicationVersion: u32,
+        pub pEngineName: *const c_char,
+        pub engineVersion: u32,
+        pub apiVersion: u32,
     }
 
     /// Object which specifies the parameters of a newly created instance.
     #[repr(C)]
     #[allow(non_snake_case)]
+    #[derive(Debug)]
     pub struct VkInstanceCreateInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        flags: VkInstanceCreateFlags,
-        pApplicationInfo: *const VkApplicationInfo,
-        enabledLayerCount: u32,
-        ppEnabledLayerNames: *const *const c_char,
-        enabledExtensionCount: u32,
-        ppEnabledExtensionNames: *const *const c_char,
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkInstanceCreateFlags,
+        pub pApplicationInfo: *const VkApplicationInfo,
+        pub enabledLayerCount: u32,
+        pub ppEnabledLayerNames: *const *const c_char,
+        pub enabledExtensionCount: u32,
+        pub ppEnabledExtensionNames: *const *const c_char,
+    }
+
+    /// Structure specifying parameters of a newly created device queue
+    ///
+    /// # Members
+    /// - sType is the type of this structure.
+    ///
+    /// - pNext is NULL or a pointer to an extension-specific structure.
+    ///
+    /// - flags is a bitmask indicating behavior of the queue.
+    ///
+    /// - queueFamilyIndex is an unsigned integer indicating the index of the queue family to create
+    ///   on this device. This index corresponds to the index of an element of the
+    ///   pQueueFamilyProperties array that was returned by vkGetPhysicalDeviceQueueFamilyProperties.
+    ///
+    /// - queueCount is an unsigned integer specifying the number of queues to create in the queue
+    ///   family indicated by queueFamilyIndex.
+    ///
+    /// - pQueuePriorities is a pointer to an array of queueCount normalized floating point values,
+    ///   specifying priorities of work that will be submitted to each created queue. See
+    ///   Queue Priority for more information.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkdevicequeuecreateinfo3
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    pub struct VkDeviceQueueCreateInfo {
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkDeviceQueueCreateFlags,
+        pub queueFamilyIndex: u32,
+        pub queueCount: u32,
+        pub pQueueProperties: *const f32,
+    }
+
+    /// Structure describing the fine-grained features that can be supported by an implementation.
+    ///
+    /// *see each struct member for details*
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceFeatures
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    pub struct VkPhysicalDeviceFeatures {
+        /// `robustBufferAccess` specifies that accesses to buffers are bounds-checked against the
+        /// range of the buffer descriptor (as determined by `VkDescriptorBufferInfo::range`,
+        /// `VkBufferViewCreateInfo::range`, or the size of the buffer). Out of bounds accesses must
+        /// not cause application termination, and the effects of shader loads, stores, and atomics
+        /// must conform to an implementation-dependent behavior as described below
+        ///
+        /// A buffer access is considered to be out of bounds if any of the following are true:
+        ///
+        /// - The pointer was formed by OpImageTexelPointer and the coordinate is less than zero or
+        /// greater than or equal to the number of whole elements in the bound range.
+        ///
+        /// - The pointer was not formed by OpImageTexelPointer and the object pointed to is not
+        ///   wholly contained within the bound range. This includes accesses performed via variable
+        ///   pointers where the buffer descriptor being accessed cannot be statically determined.
+        ///   Uninitialized pointers and pointers equal to OpConstantNull are treated as pointing to
+        ///   a zero-sized object, so all accesses through such pointers are considered to be out of
+        ///   bounds. Buffer accesses through buffer device addresses are not bounds-checked. If the
+        ///   cooperativeMatrixRobustBufferAccess feature is not enabled, then accesses using
+        ///   OpCooperativeMatrixLoadNV and OpCooperativeMatrixStoreNV may not be bounds-checked.
+        ///
+        /// > *Note*
+        /// > If a SPIR-V OpLoad instruction loads a structure and the tail end of the structure is
+        ///   out of bounds, then all members of the structure are considered out of bounds even if
+        ///   the members at the end are not statically used.
+        ///
+        /// - If any buffer access is determined to be out of bounds, then any other access of the
+        ///   same type (load, store, or atomic) to the same buffer that accesses an address less
+        ///   than 16 bytes away from the out of bounds address may also be considered out of bounds.
+        robustBufferAccess: VkBool32,
+
+        /// `fullDrawIndexUint32` specifies the full 32-bit range of indices is supported for indexed
+        /// draw calls when using a `VkIndexType` of `VK_INDEX_TYPE_UINT32`. `maxDrawIndexedIndexValue`
+        /// is the maximum index value that may be used (aside from the primitive restart index,
+        /// which is always 232-1 when the `VkIndexType` is `VK_INDEX_TYPE_UINT32`). If this feature
+        /// is supported, `maxDrawIndexedIndexValue` must be 232-1; otherwise it must be no smaller
+        /// than 224-1. See `maxDrawIndexedIndexValue`.
+        fullDrawIndexUint32: VkBool32,
+
+        /// `imageCubeArray` specifies whether image views with a `VkImageViewType` of
+        /// `VK_IMAGE_VIEW_TYPE_CUBE_ARRAY` can be created, and that the corresponding
+        /// SampledCubeArray and ImageCubeArray SPIR-V capabilities can be used in shader code.
+        imageCubeArray: VkBool32,
+
+        /// `independentBlend` specifies whether the `VkPipelineColorBlendAttachmentState` settings are
+        /// controlled independently per-attachment. If this feature is not enabled, the
+        /// `VkPipelineColorBlendAttachmentState` settings for all color attachments must be
+        /// identical. Otherwise, a different `VkPipelineColorBlendAttachmentState` can be provided
+        /// for each bound color attachment.
+        independentBlend: VkBool32,
+
+        /// `geometryShader` specifies whether geometry shaders are supported. If this feature is not
+        /// enabled, the `VK_SHADER_STAGE_GEOMETRY_BIT` and `VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT`
+        /// enum values must not be used. This also specifies whether shader modules can declare
+        /// the Geometry capability.
+        geometryShader: VkBool32,
+
+        /// `tessellationShader` specifies whether tessellation control and evaluation shaders are
+        /// supported. If this feature is not enabled, the `VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT`,
+        /// `VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT`, `VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT`,
+        /// `VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT`, and
+        /// `VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO` enum values must not be used.
+        /// This also specifies whether shader modules can declare the Tessellation capability.
+        tessellationShader: VkBool32,
+
+        /// `sampleRateShading` specifies whether Sample Shading and multisample interpolation are
+        /// supported. If this feature is not enabled, the `sampleShadingEnable` member of the
+        /// `VkPipelineMultisampleStateCreateInfo` structure must be set to `VK_FALSE` and the
+        /// `minSampleShading` member is ignored. This also specifies whether shader modules can
+        /// declare the SampleRateShading capability.
+        sampleRateShading: VkBool32,
+
+        /// `dualSrcBlend` specifies whether blend operations which take two sources are supported.
+        /// If this feature is not enabled, the `VK_BLEND_FACTOR_SRC1_COLOR`,
+        /// `VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR`, `VK_BLEND_FACTOR_SRC1_ALPHA`, and
+        /// `VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA` enum values must not be used as source or
+        /// destination blending factors. See
+        /// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#framebuffer-dsb.
+        dualSrcBlend: VkBool32,
+
+        /// `logicOp` specifies whether logic operations are supported. If this feature is not
+        /// enabled, the `logicOpEnable` member of the `VkPipelineColorBlendStateCreateInfo` structure
+        /// must be set to `VK_FALSE`, and the `logicOp` member is ignored.
+        logicOp: VkBool32,
+
+        /// `multiDrawIndirect` specifies whether multiple draw indirect is supported. If this feature
+        /// is not enabled, the drawCount parameter to the `vkCmdDrawIndirect` and
+        /// `vkCmdDrawIndexedIndirect` commands must be 0 or 1. The `maxDrawIndirectCount` member of the
+        /// `VkPhysicalDeviceLimits` structure must also be 1 if this feature is not supported. See
+        /// `maxDrawIndirectCount`.
+        multiDrawIndirect: VkBool32,
+
+        /// `drawIndirectFirstInstance` specifies whether indirect draw calls support the
+        /// `firstInstance` parameter. If this feature is not enabled, the `firstInstance` member of
+        /// all `VkDrawIndirectCommand` and `VkDrawIndexedIndirectCommand` structures that are
+        /// provided to the `vkCmdDrawIndirect` and `vkCmdDrawIndexedIndirect` commands must be 0.
+        drawIndirectFirstInstance: VkBool32,
+
+        /// `depthClamp` specifies whether depth clamping is supported. If this feature is not
+        /// enabled, the `depthClampEnable` member of the `VkPipelineRasterizationStateCreateInfo`
+        /// structure must be set to `VK_FALSE`. Otherwise, setting `depthClampEnable` to `VK_TRUE`
+        /// will enable depth clamping.
+        depthClamp: VkBool32,
+
+        /// `depthBiasClamp` specifies whether depth bias clamping is supported. If this feature is
+        /// not enabled, the `depthBiasClamp` member of the `VkPipelineRasterizationStateCreateInfo`
+        /// structure must be set to 0.0 unless the `VK_DYNAMIC_STATE_DEPTH_BIAS` dynamic state is
+        /// enabled, and the `depthBiasClamp` parameter to `vkCmdSetDepthBias` must be set to 0.0.
+        depthBiasClamp: VkBool32,
+
+        /// `fillModeNonSolid` specifies whether point and wireframe fill modes are supported.
+        /// If this feature is not enabled, the `VK_POLYGON_MODE_POINT` and `VK_POLYGON_MODE_LINE`
+        /// enum values must not be used.
+        fillModeNonSolid: VkBool32,
+
+        /// `depthBounds` specifies whether depth bounds tests are supported. If this feature is not
+        /// enabled, the `depthBoundsTestEnable` member of the `VkPipelineDepthStencilStateCreateInfo`
+        /// structure must be set to `VK_FALSE`. When `depthBoundsTestEnable` is set to `VK_FALSE`, the
+        /// `minDepthBounds` and `maxDepthBounds` members of the `VkPipelineDepthStencilStateCreateInfo`
+        /// structure are ignored.
+        depthBounds: VkBool32,
+
+        /// `wideLines` specifies whether lines with width other than 1.0 are supported. If this
+        /// feature is not enabled, the `lineWidth` member of the
+        /// `VkPipelineRasterizationStateCreateInfo` structure must be set to 1.0 unless the
+        /// `VK_DYNAMIC_STATE_LINE_WIDTH` dynamic state is enabled, and the `lineWidth` parameter to
+        /// `vkCmdSetLineWidth` must be set to 1.0. When this feature is supported, the range and
+        /// granularity of supported line widths are indicated by the `lineWidthRange` and
+        /// `lineWidthGranularity` members of the `VkPhysicalDeviceLimits` structure, respectively.
+        wideLines: VkBool32,
+
+        /// `largePoints` specifies whether points with size greater than 1.0 are supported. If this
+        /// feature is not enabled, only a point size of 1.0 written by a shader is supported. The
+        /// range and granularity of supported point sizes are indicated by the `pointSizeRange` and
+        /// `pointSizeGranularity` members of the `VkPhysicalDeviceLimits` structure, respectively.
+        largePoints: VkBool32,
+
+        /// `alphaToOne` specifies whether the implementation is able to replace the alpha value of
+        /// the color fragment output from the fragment shader with the maximum representable alpha
+        /// value for fixed-point colors or 1.0 for floating-point colors. If this feature is not
+        /// enabled, then the `alphaToOneEnable` member of the `VkPipelineMultisampleStateCreateInfo`
+        /// structure must be set to `VK_FALSE`. Otherwise, setting `alphaToOneEnable` to VK_TRUE will
+        /// enable alpha-to-one behavior.
+        alphaToOne: VkBool32,
+
+        /// multiViewport specifies whether more than one viewport is supported. If this feature is not enabled:
+        ///
+        /// - The viewportCount and scissorCount members of the VkPipelineViewportStateCreateInfo
+        ///   structure must be set to 1.
+        ///
+        /// - The firstViewport and viewportCount parameters to the vkCmdSetViewport command must be
+        ///   set to 0 and 1, respectively.
+        ///
+        /// - The firstScissor and scissorCount parameters to the vkCmdSetScissor command must be
+        ///   set to 0 and 1, respectively.
+        ///
+        /// - The exclusiveScissorCount member of the VkPipelineViewportExclusiveScissorStateCreateInfoNV
+        ///   structure must be set to 0 or 1.
+        ///
+        /// - The firstExclusiveScissor and exclusiveScissorCount parameters to the
+        ///   vkCmdSetExclusiveScissorNV command must be set to 0 and 1, respectively.
+        multiViewport: VkBool32,
+
+        /// `samplerAnisotropy` specifies whether anisotropic filtering is supported. If this feature
+        /// is not enabled, the `anisotropyEnable` member of the `VkSamplerCreateInfo` structure must be
+        /// `VK_FALSE`.
+        samplerAnisotropy: VkBool32,
+
+        /// `textureCompressionETC2` specifies whether all of the ETC2 and EAC compressed texture formats
+        /// are supported. If this feature is enabled, then the `VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT`,
+        /// `VK_FORMAT_FEATURE_BLIT_SRC_BIT` and `VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT`
+        /// features must be supported in `optimalTilingFeatures` for the following formats:
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_EAC_R11_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_EAC_R11_SNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_EAC_R11G11_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_EAC_R11G11_SNORM_BLOCK`
+        ///
+        /// To query for additional properties, or if the feature is not enabled,
+        /// `vkGetPhysicalDeviceFormatProperties` and `vkGetPhysicalDeviceImageFormatProperties`
+        /// can be used to check for supported properties of individual formats as normal.
+        textureCompressionETC2: VkBool32,
+
+        /// `textureCompressionASTC_LDR` specifies whether all of the ASTC LDR compressed texture
+        /// formats are supported. If this feature is enabled, then the `VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT`,
+        /// `VK_FORMAT_FEATURE_BLIT_SRC_BIT` and `VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT`
+        /// features must be supported in `optimalTilingFeatures` for the following formats:
+        ///
+        /// - `VK_FORMAT_ASTC_4x4_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_4x4_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_5x4_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_5x4_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_5x5_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_5x5_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_6x5_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_6x5_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_6x6_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_6x6_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x5_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x5_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x6_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x6_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x8_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_8x8_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x5_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x5_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x6_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x6_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x8_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x8_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x10_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_10x10_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_12x10_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_12x10_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_12x12_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_ASTC_12x12_SRGB_BLOCK`
+        ///
+        /// To query for additional properties, or if the feature is not enabled,
+        /// `vkGetPhysicalDeviceFormatProperties` and `vkGetPhysicalDeviceImageFormatProperties` can be
+        /// used to check for supported properties of individual formats as normal.
+        textureCompressionASTC_LDR: VkBool32,
+
+        /// `textureCompressionBC` specifies whether all of the BC compressed texture formats are
+        /// supported. If this feature is enabled, then the `VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT`,
+        /// `VK_FORMAT_FEATURE_BLIT_SRC_BIT` and `VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT`
+        /// features must be supported in `optimalTilingFeatures` for the following formats:
+        ///
+        /// - `VK_FORMAT_BC1_RGB_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC1_RGB_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC1_RGBA_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC1_RGBA_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC2_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC2_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC3_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC3_SRGB_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC4_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC4_SNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC5_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC5_SNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC6H_UFLOAT_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC6H_SFLOAT_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC7_UNORM_BLOCK`
+        ///
+        /// - `VK_FORMAT_BC7_SRGB_BLOCK`
+        ///
+        /// To query for additional properties, or if the feature is not enabled,
+        /// `vkGetPhysicalDeviceFormatProperties` and `vkGetPhysicalDeviceImageFormatProperties` can be
+        /// used to check for supported properties of individual formats as normal.
+        textureCompressionBC: VkBool32,
+
+        /// `occlusionQueryPrecise` specifies whether occlusion queries returning actual sample counts
+        /// are supported. Occlusion queries are created in a `VkQueryPool` by specifying the
+        /// `queryType` of `VK_QUERY_TYPE_OCCLUSION` in the `VkQueryPoolCreateInfo` structure which is
+        /// passed to `vkCreateQueryPool`. If this feature is enabled, queries of this type can enable
+        /// `VK_QUERY_CONTROL_PRECISE_BIT` in the flags parameter to `vkCmdBeginQuery`. If this feature
+        /// is not supported, the implementation supports only boolean occlusion queries. When any
+        /// samples are passed, boolean queries will return a non-zero result value, otherwise a
+        /// result value of zero is returned. When this feature is enabled and
+        /// `VK_QUERY_CONTROL_PRECISE_BIT` is set, occlusion queries will report the actual
+        /// number of samples passed.
+        occlusionQueryPrecise: VkBool32,
+
+        /// `pipelineStatisticsQuery` specifies whether the pipeline statistics queries are supported.
+        /// If this feature is not enabled, queries of type `VK_QUERY_TYPE_PIPELINE_STATISTICS` cannot
+        /// be created, and none of the `VkQueryPipelineStatisticFlagBits` bits can be set in the
+        /// `pipelineStatistics` member of the `VkQueryPoolCreateInfo` structure.
+        pipelineStatisticsQuery: VkBool32,
+
+        /// `vertexPipelineStoresAndAtomics` specifies whether storage buffers and images support
+        /// stores and atomic operations in the vertex, tessellation, and geometry shader stages.
+        /// If this feature is not enabled, all storage image, storage texel buffers, and storage
+        /// buffer variables used by these stages in shader modules must be decorated with the
+        /// NonWritable decoration (or the readonly memory qualifier in GLSL).
+        vertexPipelineStoresAndAtomics: VkBool32,
+
+        /// `fragmentStoresAndAtomics` specifies whether storage buffers and images support stores
+        /// and atomic operations in the fragment shader stage. If this feature is not enabled,
+        /// all storage image, storage texel buffers, and storage buffer variables used by the
+        /// fragment stage in shader modules must be decorated with the NonWritable decoration
+        /// (or the readonly memory qualifier in GLSL).
+        fragmentStoresAndAtomics: VkBool32,
+
+        /// `shaderTessellationAndGeometryPointSize` specifies whether the PointSize built-in
+        /// decoration is available in the tessellation control, tessellation evaluation, and
+        /// geometry shader stages. If this feature is not enabled, members decorated with the
+        /// PointSize built-in decoration must not be read from or written to and all points
+        /// written from a tessellation or geometry shader will have a size of 1.0. This also
+        /// specifies whether shader modules can declare the TessellationPointSize capability
+        /// for tessellation control and evaluation shaders, or if the shader modules can declare
+        /// the GeometryPointSize capability for geometry shaders. An implementation supporting
+        /// this feature must also support one or both of the `tessellationShader` or `geometryShader`
+        /// features.
+        shaderTessellationAndGeometryPointSize: VkBool32,
+
+        /// `shaderImageGatherExtended` specifies whether the extended set of image gather instructions
+        /// are available in shader code. If this feature is not enabled, the `OpImage*Gather`
+        /// instructions do not support the Offset and ConstOffsets operands. This also specifies
+        /// whether shader modules can declare the ImageGatherExtended capability.
+        shaderImageGatherExtended: VkBool32,
+
+        /// `shaderStorageImageExtendedFormats` specifies whether all the “storage image extended
+        /// formats” below are supported; if this feature is supported, then the
+        /// `VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT` must be supported in `optimalTilingFeatures` for the
+        /// following formats:
+        ///
+        /// - `VK_FORMAT_R16G16_SFLOAT`
+        ///
+        /// - `VK_FORMAT_B10G11R11_UFLOAT_PACK32`
+        ///
+        /// - `VK_FORMAT_R16_SFLOAT`
+        ///
+        /// - `VK_FORMAT_R16G16B16A16_UNORM`
+        ///
+        /// - `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
+        ///
+        /// - `VK_FORMAT_R16G16_UNORM`
+        ///
+        /// - `VK_FORMAT_R8G8_UNORM`
+        ///
+        /// - `VK_FORMAT_R16_UNORM`
+        ///
+        /// - `VK_FORMAT_R8_UNORM`
+        ///
+        /// - `VK_FORMAT_R16G16B16A16_SNORM`
+        ///
+        /// - `VK_FORMAT_R16G16_SNORM`
+        ///
+        /// - `VK_FORMAT_R8G8_SNORM`
+        ///
+        /// - `VK_FORMAT_R16_SNORM`
+        ///
+        /// - `VK_FORMAT_R8_SNORM`
+        ///
+        /// - `VK_FORMAT_R16G16_SINT`
+        ///
+        /// - `VK_FORMAT_R8G8_SINT`
+        ///
+        /// - `VK_FORMAT_R16_SINT`
+        ///
+        /// - `VK_FORMAT_R8_SINT`
+        ///
+        /// - `VK_FORMAT_A2B10G10R10_UINT_PACK32`
+        ///
+        /// - `VK_FORMAT_R16G16_UINT`
+        ///
+        /// - `VK_FORMAT_R8G8_UINT`
+        ///
+        /// - `VK_FORMAT_R16_UINT`
+        ///
+        /// - `VK_FORMAT_R8_UINT`
+        ///
+        /// > *Note*
+        /// > `shaderStorageImageExtendedFormats` feature only adds a guarantee of format support,
+        /// > which is specified for the whole physical device. Therefore enabling or disabling the
+        /// > feature via vkCreateDevice has no practical effect.
+        ///
+        /// To query for additional properties, or if the feature is not supported,
+        /// `vkGetPhysicalDeviceFormatProperties` and `vkGetPhysicalDeviceImageFormatProperties` can be
+        /// used to check for supported properties of individual formats, as usual rules allow.
+        ///
+        /// `VK_FORMAT_R32G32_UINT`, `VK_FORMAT_R32G32_SINT`, and `VK_FORMAT_R32G32_SFLOAT` from
+        /// StorageImageExtendedFormats SPIR-V capability, are already covered by core Vulkan
+        /// mandatory format support.
+        shaderStorageImageExtendedFormats: VkBool32,
+
+        /// `shaderStorageImageMultisample` specifies whether multisampled storage images are supported.
+        /// If this feature is not enabled, images that are created with a usage that includes
+        /// `VK_IMAGE_USAGE_STORAGE_BIT` must be created with samples equal to `VK_SAMPLE_COUNT_1_BIT`.
+        /// This also specifies whether shader modules can declare the StorageImageMultisample
+        /// capability.
+        shaderStorageImageMultisample: VkBool32,
+
+        /// shaderStorageImageReadWithoutFormat specifies whether storage images require a format
+        /// qualifier to be specified when reading from storage images. If this feature is not enabled,
+        /// the OpImageRead instruction must not have an OpTypeImage of Unknown. This also specifies
+        /// whether shader modules can declare the StorageImageReadWithoutFormat capability.
+        shaderStorageImageReadWithoutFormat: VkBool32,
+
+        /// shaderStorageImageWriteWithoutFormat specifies whether storage images require a format
+        /// qualifier to be specified when writing to storage images. If this feature is not enabled,
+        /// the OpImageWrite instruction must not have an OpTypeImage of Unknown. This also specifies
+        /// whether shader modules can declare the StorageImageWriteWithoutFormat capability.
+        shaderStorageImageWriteWithoutFormat: VkBool32,
+
+        /// `shaderUniformBufferArrayDynamicIndexing` specifies whether arrays of uniform buffers can
+        /// be indexed by dynamically uniform integer expressions in shader code. If this feature
+        /// is not enabled, resources with a descriptor type of `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER` or
+        /// `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` must be indexed only by constant integral
+        /// expressions when aggregated into arrays in shader code. This also specifies whether
+        /// shader modules can declare the UniformBufferArrayDynamicIndexing capability.
+        shaderUniformBufferArrayDynamicIndexing: VkBool32,
+
+        /// `shaderSampledImageArrayDynamicIndexing` specifies whether arrays of samplers or sampled
+        /// images can be indexed by dynamically uniform integer expressions in shader code. If this
+        /// feature is not enabled, resources with a descriptor type of `VK_DESCRIPTOR_TYPE_SAMPLER`,
+        /// `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`, or `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE` must be
+        /// indexed only by constant integral expressions when aggregated into arrays in shader code.
+        /// This also specifies whether shader modules can declare the SampledImageArrayDynamicIndexing
+        /// capability.
+        shaderSampledImageArrayDynamicIndexing: VkBool32,
+
+        /// `shaderStorageBufferArrayDynamicIndexing` specifies whether arrays of storage buffers can
+        /// be indexed by dynamically uniform integer expressions in shader code. If this feature
+        /// is not enabled, resources with a descriptor type of `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+        /// or `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC` must be indexed only by constant integral
+        /// expressions when aggregated into arrays in shader code. This also specifies whether
+        /// shader modules can declare the StorageBufferArrayDynamicIndexing capability.
+        shaderStorageBufferArrayDynamicIndexing: VkBool32,
+
+        /// shaderStorageImageArrayDynamicIndexing specifies whether arrays of storage images can be
+        /// indexed by dynamically uniform integer expressions in shader code. If this feature is not
+        /// enabled, resources with a descriptor type of VK_DESCRIPTOR_TYPE_STORAGE_IMAGE must be
+        /// indexed only by constant integral expressions when aggregated into arrays in shader code.
+        /// This also specifies whether shader modules can declare the StorageImageArrayDynamicIndexing
+        /// capability.
+        shaderStorageImageArrayDynamicIndexing: VkBool32,
+
+        /// shaderClipDistance specifies whether clip distances are supported in shader code. If this
+        /// feature is not enabled, any members decorated with the ClipDistance built-in decoration
+        /// must not be read from or written to in shader modules. This also specifies whether shader
+        /// modules can declare the ClipDistance capability.
+        shaderClipDistance: VkBool32,
+
+        /// shaderCullDistance specifies whether cull distances are supported in shader code. If this
+        /// feature is not enabled, any members decorated with the CullDistance built-in decoration
+        /// must not be read from or written to in shader modules. This also specifies whether shader
+        /// modules can declare the CullDistance capability.
+        shaderCullDistance: VkBool32,
+
+        /// shaderFloat64 specifies whether 64-bit floats (doubles) are supported in shader code. If
+        /// this feature is not enabled, 64-bit floating-point types must not be used in shader code.
+        /// This also specifies whether shader modules can declare the Float64 capability. Declaring
+        /// and using 64-bit floats is enabled for all storage classes that SPIR-V allows with the
+        /// Float64 capability.
+        shaderFloat64: VkBool32,
+
+        /// shaderInt64 specifies whether 64-bit integers (signed and unsigned) are supported in
+        /// shader code. If this feature is not enabled, 64-bit integer types must not be used in
+        /// shader code. This also specifies whether shader modules can declare the Int64 capability.
+        /// Declaring and using 64-bit integers is enabled for all storage classes that SPIR-V
+        /// allows with the Int64 capability.
+        shaderInt64: VkBool32,
+
+        /// shaderInt16 specifies whether 16-bit integers (signed and unsigned) are supported in
+        /// shader code. If this feature is not enabled, 16-bit integer types must not be used in
+        /// shader code. This also specifies whether shader modules can declare the Int16 capability.
+        /// However, this only enables a subset of the storage classes that SPIR-V allows for the
+        /// Int16 SPIR-V capability: Declaring and using 16-bit integers in the Private, Workgroup,
+        /// and Function storage classes is enabled, while declaring them in the interface storage
+        /// classes (e.g., UniformConstant, Uniform, StorageBuffer, Input, Output, and PushConstant)
+        /// is not enabled.
+        shaderInt16: VkBool32,
+
+        /// shaderResourceResidency specifies whether image operations that return resource residency
+        /// information are supported in shader code. If this feature is not enabled, the
+        /// OpImageSparse* instructions must not be used in shader code. This also specifies
+        /// whether shader modules can declare the SparseResidency capability. The feature requires
+        /// at least one of the sparseResidency* features to be supported.
+        shaderResourceResidency: VkBool32,
+
+        /// shaderResourceMinLod specifies whether image operations specifying the minimum resource
+        /// LOD are supported in shader code. If this feature is not enabled, the MinLod image
+        /// operand must not be used in shader code. This also specifies whether shader modules can
+        /// declare the MinLod capability.
+        shaderResourceMinLod: VkBool32,
+
+        /// sparseBinding specifies whether resource memory can be managed at opaque sparse block
+        /// level instead of at the object level. If this feature is not enabled, resource memory
+        /// must be bound only on a per-object basis using the vkBindBufferMemory and
+        /// vkBindImageMemory commands. In this case, buffers and images must not be created with
+        /// VK_BUFFER_CREATE_SPARSE_BINDING_BIT and VK_IMAGE_CREATE_SPARSE_BINDING_BIT set in the
+        /// flags member of the VkBufferCreateInfo and VkImageCreateInfo structures, respectively.
+        /// Otherwise, resource memory can be managed as described in Sparse Resource Features.
+        sparseBinding: VkBool32,
+
+        /// sparseResidencyBuffer specifies whether the device can access partially resident buffers.
+        /// If this feature is not enabled, buffers must not be created with
+        /// VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the VkBufferCreateInfo
+        /// structure.
+        sparseResidencyBuffer: VkBool32,
+
+        /// sparseResidencyImage2D specifies whether the device can access partially resident 2D
+        /// images with 1 sample per pixel. If this feature is not enabled, images with an imageType
+        /// of VK_IMAGE_TYPE_2D and samples set to VK_SAMPLE_COUNT_1_BIT must not be created with
+        /// VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the VkImageCreateInfo
+        /// structure.
+        sparseResidencyImage2D: VkBool32,
+
+        /// sparseResidencyImage3D specifies whether the device can access partially resident 3D
+        /// images. If this feature is not enabled, images with an imageType of VK_IMAGE_TYPE_3D
+        /// must not be created with VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member
+        /// of the VkImageCreateInfo structure.
+        sparseResidencyImage3D: VkBool32,
+
+        /// sparseResidency2Samples specifies whether the physical device can access partially
+        /// resident 2D images with 2 samples per pixel. If this feature is not enabled, images
+        /// with an imageType of VK_IMAGE_TYPE_2D and samples set to VK_SAMPLE_COUNT_2_BIT must not
+        /// be created with VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the
+        /// VkImageCreateInfo structure.
+        sparseResidency2Samples: VkBool32,
+
+        /// sparseResidency4Samples specifies whether the physical device can access partially
+        /// resident 2D images with 4 samples per pixel. If this feature is not enabled, images with
+        /// an imageType of VK_IMAGE_TYPE_2D and samples set to VK_SAMPLE_COUNT_4_BIT must not be
+        /// created with VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the
+        /// VkImageCreateInfo structure.
+        sparseResidency4Samples: VkBool32,
+
+        /// sparseResidency8Samples specifies whether the physical device can access partially
+        /// resident 2D images with 8 samples per pixel. If this feature is not enabled, images with
+        /// an imageType of VK_IMAGE_TYPE_2D and samples set to VK_SAMPLE_COUNT_8_BIT must not be
+        /// created with VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the
+        /// VkImageCreateInfo structure.
+        sparseResidency8Samples: VkBool32,
+
+        /// sparseResidency16Samples specifies whether the physical device can access partially
+        /// resident 2D images with 16 samples per pixel. If this feature is not enabled, images
+        /// with an imageType of VK_IMAGE_TYPE_2D and samples set to VK_SAMPLE_COUNT_16_BIT must
+        /// not be created with VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT set in the flags member of the
+        /// VkImageCreateInfo structure.
+        sparseResidency16Samples: VkBool32,
+
+        /// sparseResidencyAliased specifies whether the physical device can correctly access data
+        /// aliased into multiple locations. If this feature is not enabled, the
+        /// VK_BUFFER_CREATE_SPARSE_ALIASED_BIT and VK_IMAGE_CREATE_SPARSE_ALIASED_BIT enum values
+        /// must not be used in flags members of the VkBufferCreateInfo and VkImageCreateInfo
+        /// structures, respectively.
+        sparseResidencyAliased: VkBool32,
+
+        /// variableMultisampleRate specifies whether all pipelines that will be bound to a command
+        /// buffer during a subpass with no attachments must have the same value for
+        /// VkPipelineMultisampleStateCreateInfo::rasterizationSamples. If set to VK_TRUE, the
+        /// implementation supports variable multisample rates in a subpass with no attachments. If
+        /// set to VK_FALSE, then all pipelines bound in such a subpass must have the same
+        /// multisample rate. This has no effect in situations where a subpass uses any attachments.
+        variableMultisampleRate: VkBool32,
+
+        /// inheritedQueries specifies whether a secondary command buffer may be executed while a
+        /// query is active.
+        inheritedQueries: VkBool32,
+
+    }
+
+    /// Structure specifying parameters of a newly created device
+    ///
+    /// # Members
+    /// - sType is the type of this structure.
+    ///
+    /// - pNext is NULL or a pointer to an extension-specific structure.
+    ///
+    /// - flags is reserved for future use.
+    ///
+    /// - queueCreateInfoCount is the unsigned integer size of the pQueueCreateInfos array. Refer to
+    ///   the Queue Creation section below for further details.
+    ///
+    /// - pQueueCreateInfos is a pointer to an array of VkDeviceQueueCreateInfo structures
+    ///   describing the queues that are requested to be created along with the logical device.
+    ///   Refer to the Queue Creation section below for further details.
+    ///
+    /// - enabledLayerCount is deprecated and ignored.
+    ///
+    /// - ppEnabledLayerNames is deprecated and ignored. See
+    ///   https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#extendingvulkan-layers-devicelayerdeprecation.
+    ///
+    /// - enabledExtensionCount is the number of device extensions to enable.
+    ///
+    /// - ppEnabledExtensionNames is a pointer to an array of enabledExtensionCount null-terminated
+    ///   UTF-8 strings containing the names of extensions to enable for the created device. See the
+    ///   https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#extendingvulkan-extensions
+    ///   section for further details.
+    ///
+    /// - pEnabledFeatures is NULL or a pointer to a VkPhysicalDeviceFeatures structure containing
+    ///   boolean indicators of all the features to be enabled. Refer to the Features section for
+    ///   further details.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkdevicecreateinfo3
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    pub struct VkDeviceCreateInfo {
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub flags: VkDeviceCreateFlags,
+        pub queueCreateInfoCount: u32,
+        pub pQueueCreateInfos: *const VkDeviceQueueCreateInfo,
+        pub enabledLayerCount: u32,
+        pub ppEnabledLayerNames: *const *const c_char,
+        pub enabledExtensionCount: u32,
+        pub ppEnabledExtensionNames: *const *const c_char,
+        pub pEnabledFeatures: *const VkPhysicalDeviceFeatures,
     }
 
     /// Structure containing callback function pointers for memory allocation.
@@ -937,11 +1755,11 @@ pub mod objects {
     #[repr(C)]
     #[allow(non_snake_case)]
     pub struct VkAllocationCallbacks {
-        pUserDate: *mut c_void,
-        pfnAllocation: PFN_vkAllocationFunction,
-        pfnReallocation: PFN_vkReallocationFunction,
-        pfnFree: PFN_vkFreeFunction,
-        pfnInternalAllocation: PFN_vkInternalAllocationNotification,
-        pfnInternalFree: PFN_vkInternalFreeNotification,
+        pub pUserData: *mut c_void,
+        pub pfnAllocation: PFN_vkAllocationFunction,
+        pub pfnReallocation: PFN_vkReallocationFunction,
+        pub pfnFree: PFN_vkFreeFunction,
+        pub pfnInternalAllocation: PFN_vkInternalAllocationNotification,
+        pub pfnInternalFree: PFN_vkInternalFreeNotification,
     }
 }
