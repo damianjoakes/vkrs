@@ -4,6 +4,7 @@ use crate::ffi::c_types::enums::VkResult;
 use crate::ffi::c_types::fn_ptrs::PFN_vkVoidFunction;
 use crate::ffi::c_types::objects::*;
 
+#[allow(non_snake_case, non_camel_case_types)]
 #[link(name = "C:\\VulkanSDK\\1.4.304.0\\Lib\\vulkan-1")]
 unsafe extern "C" {
     /// Obtains a function pointer for any Vulkan command, from a Vulkan *instance*.
@@ -28,12 +29,68 @@ unsafe extern "C" {
         p_name: *const c_char
     ) -> PFN_vkVoidFunction;
 
-    #[allow(non_snake_case)]
+
     pub fn vkCreateInstance(
         pCreateInfo: *const VkInstanceCreateInfo,
         pAllocator: *const VkAllocationCallbacks,
         pInstance: *mut VkInstance,
     ) -> VkResult;
+
+    /// Destroy an instance of Vulkan
+    ///
+    /// # Parameters
+    /// - instance is the handle of the instance to destroy.
+    ///
+    /// - pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkdestroyinstance3
+    pub fn vkDestroyInstance(
+        instance: VkInstance,
+        pAllocator: *const VkAllocationCallbacks
+    );
+
+    /// Returns properties of a physical device
+    ///
+    /// # Parameters
+    /// `physicalDevice` is the handle to the physical device whose properties will be queried.
+    ///
+    /// `pProperties` is a pointer to a VkPhysicalDeviceProperties structure in which properties are returned
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkGetPhysicalDeviceProperties
+    pub fn vkGetPhysicalDeviceProperties(
+        physicalDevice: VkPhysicalDevice,
+        pProperties: *mut VkPhysicalDeviceProperties
+    );
+
+    /// Returns properties of a physical device
+    ///
+    /// # Parameters
+    /// `physicalDevice` is the handle to the physical device whose properties will be queried.
+    ///
+    /// `pProperties` is a pointer to a VkPhysicalDeviceProperties structure in which properties are returned
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkGetPhysicalDeviceProperties2
+    ///
+    /// # todo
+    /// This currently isn't working properly. Our tests are providing a access violation. We need
+    /// to review this and come back to it.
+    pub fn vkGetPhysicalDeviceProperties2(
+        physicalDevice: VkPhysicalDevice,
+        pProperties: *mut VkPhysicalDeviceProperties2
+    );
+
+    /// Returns properties of a physical device
+    ///
+    /// # Parameters
+    /// `physicalDevice` is the handle to the physical device whose properties will be queried.
+    ///
+    /// `pProperties` is a pointer to a VkPhysicalDeviceProperties structure in which properties are returned
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkGetPhysicalDeviceProperties2
+    pub fn vkGetPhysicalDeviceProperties2KHR(
+        physicalDevice: VkPhysicalDevice,
+        pProperties: *mut VkPhysicalDeviceProperties2
+    );
 
     /// Create a new device instance
     ///
@@ -66,7 +123,6 @@ unsafe extern "C" {
     /// If that occurs, vkCreateDevice will return VK_ERROR_TOO_MANY_OBJECTS.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkCreateDevice
-    #[allow(non_snake_case)]
     pub fn vkCreateDevice(
         phsyicalDevice: VkPhysicalDevice,
         pCreateInfo: *const VkDeviceCreateInfo,
@@ -94,7 +150,6 @@ unsafe extern "C" {
     /// to indicate that not all the available physical devices were returned.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkenumeratephysicaldevices3
-    #[allow(non_snake_case)]
     pub fn vkEnumeratePhysicalDevices(
         instance: VkInstance,
         pPhysicalDeviceCount: *mut u32,

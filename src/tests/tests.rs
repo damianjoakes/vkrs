@@ -1,12 +1,14 @@
 use crate::ffi::c_types::enums::VkStructureType;
-use crate::ffi::c_types::fn_ptrs::PFN_vkrsEnumerateInstanceVersion;
-use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice};
-use crate::ffi::functions::{vkCreateInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr};
+use crate::ffi::c_types::fn_ptrs::PFN_vkEnumerateInstanceVersion;
+use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice, VkPhysicalDeviceProperties, VkPhysicalDeviceProperties2};
+use crate::ffi::functions::{vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr, vkGetPhysicalDeviceProperties};
 use crate::vkrs_get_instance_proc_addr_ext;
 use libc::c_char;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
+use std::mem;
 use std::mem::MaybeUninit;
-use std::ptr::null;
+use std::ptr::{null, null_mut};
+
 
 #[test]
 fn vk_get_instance_proc_test() {
@@ -46,7 +48,7 @@ fn vk_get_instance_proc_test() {
     unsafe {
         // SAFETY: since the uninitialized memory is being used safely, this function will initialize
         // the slice of memory at which the VkInstance will sit.
-        let result = vkCreateInstance(
+        let _result = vkCreateInstance(
             &vk_create_instance_info,
             null(),
             vk_instance.as_mut_ptr(),
@@ -59,7 +61,7 @@ fn vk_get_instance_proc_test() {
         vkrs_get_instance_proc_addr_ext!(
             vk_instance,
             "vkEnumerateInstanceVersion",
-            PFN_vkrsEnumerateInstanceVersion
+            PFN_vkEnumerateInstanceVersion
         )
     };
 
@@ -137,26 +139,212 @@ fn vk_enumerate_devices_test() {
     // This will now hold a dispatchable handle to the VkInstance on the host.
     dbg!(vk_instance);
 
+    // Need to assign
     let mut physical_device_count = 0u32;
 
-    // Create an empty, uninitialized slice of memory for the physical devices.
-    let mut vk_physical_devices: MaybeUninit<VkPhysicalDevice> = MaybeUninit::uninit();
 
     unsafe {
         let enumerate_result = vkEnumeratePhysicalDevices(
             vk_instance,
             &mut physical_device_count,
-            vk_physical_devices.as_mut_ptr(),
+            null_mut(), // pass in a null value, so we can get the device count first before enumerating the devices.
+        );
+        dbg!(enumerate_result);
+        dbg!(physical_device_count);
+    }
+
+
+    // Create an empty, uninitialized slice of memory for the physical devices.
+    // Using mem::zeroed here, so that we can zero-fill enough space in memory for the devices.
+    let mut vk_physical_devices: [MaybeUninit<VkPhysicalDevice>; 8] = unsafe { mem::zeroed() };
+
+    unsafe {
+        let enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            vk_physical_devices.as_mut_ptr() as *mut VkPhysicalDevice,
         );
 
         dbg!(enumerate_result);
     }
 
-    // This will now hold a dispatchable handle to a list of physical devices on the host.
-    let vk_physical_devices = unsafe {
-        vk_physical_devices.assume_init()
+    unsafe {
+        vkDestroyInstance(vk_instance, null());
+    }
+}
+
+#[test]
+fn vk_get_physical_device_properties_test() {
+    let enable_extension_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+    let enable_layer_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    let vk_create_instance_info = VkInstanceCreateInfo {
+        flags: 0x00000001,
+        enabledExtensionCount: 0,
+        enabledLayerCount: 0,
+        pNext: null(),
+        pApplicationInfo: null(),
+        sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        ppEnabledExtensionNames: enable_extension_names.as_ptr(),
+        ppEnabledLayerNames: enable_layer_names.as_ptr(),
     };
 
-    dbg!(vk_physical_devices);
-    dbg!(physical_device_count);
+    // Create an empty, uninitialized slice of memory for the Vulkan instance.
+    let mut vk_instance: MaybeUninit<VkInstance> = MaybeUninit::uninit();
+
+    unsafe {
+        // SAFETY: since the uninitialized memory is being used safely, this function will initialize
+        // the slice of memory at which the VkInstance will sit.
+        let result = vkCreateInstance(
+            &vk_create_instance_info,
+            null(),
+            vk_instance.as_mut_ptr(),
+        );
+
+        println!("{:?}", result);
+    }
+
+    let vk_instance = unsafe {
+        // SAFETY: This code is unreachable if the VkInstance wasn't previously initialized.
+        vk_instance.assume_init()
+    };
+
+    // This will now hold a dispatchable handle to the VkInstance on the host.
+    dbg!(vk_instance);
+
+    // Need to assign
+    let mut physical_device_count = 0u32;
+
+
+    unsafe {
+        let enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            null_mut(), // pass in a null value, so we can get the device count first before enumerating the devices.
+        );
+        dbg!(enumerate_result);
+        dbg!(physical_device_count);
+    }
+
+
+    // Create an empty, uninitialized slice of memory for the physical devices.
+    // Using mem::zeroed here, so that we can zero-fill enough space in memory for the devices.
+    let mut vk_physical_devices: [MaybeUninit<VkPhysicalDevice>; 8] = unsafe { mem::zeroed() };
+
+    unsafe {
+        let enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            vk_physical_devices.as_mut_ptr() as *mut VkPhysicalDevice,
+        );
+
+        dbg!(enumerate_result);
+    }
+
+    let mut physical_device_properties: MaybeUninit<VkPhysicalDeviceProperties> = MaybeUninit::uninit();
+
+    unsafe {
+        vkGetPhysicalDeviceProperties(vk_physical_devices[0].assume_init(), physical_device_properties.as_mut_ptr());
+
+        let device_properties = physical_device_properties.assume_init();
+        let device_name = CStr::from_ptr(device_properties.deviceName.as_ptr());
+        dbg!(device_properties);
+        dbg!(device_name);
+    }
+
+    unsafe {
+        vkDestroyInstance(vk_instance, null());
+    }
+}
+
+#[test]
+fn vk_get_physical_device_properties_2_test() {
+    let enable_extension_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+    let enable_layer_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    let vk_create_instance_info = VkInstanceCreateInfo {
+        flags: 0x00000001,
+        enabledExtensionCount: 0,
+        enabledLayerCount: 0,
+        pNext: null(),
+        pApplicationInfo: null(),
+        sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        ppEnabledExtensionNames: enable_extension_names.as_ptr(),
+        ppEnabledLayerNames: enable_layer_names.as_ptr(),
+    };
+
+    // Create an empty, uninitialized slice of memory for the Vulkan instance.
+    let mut vk_instance: MaybeUninit<VkInstance> = MaybeUninit::uninit();
+
+    unsafe {
+        // SAFETY: since the uninitialized memory is being used safely, this function will initialize
+        // the slice of memory at which the VkInstance will sit.
+        let result = vkCreateInstance(
+            &vk_create_instance_info,
+            null(),
+            vk_instance.as_mut_ptr(),
+        );
+
+        println!("{:?}", result);
+    }
+
+    let vk_instance = unsafe {
+        // SAFETY: This code is unreachable if the VkInstance wasn't previously initialized.
+        vk_instance.assume_init()
+    };
+
+    let mut physical_device_count = 0u32;
+
+    unsafe {
+        let _enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            null_mut(), // pass in a null value, so we can get the device count first before enumerating the devices.
+        );
+    }
+
+    // Create an empty, uninitialized slice of memory for the physical devices.
+    // Using mem::zeroed here, so that we can zero-fill enough space in memory for the devices.
+    let mut vk_physical_devices: [MaybeUninit<VkPhysicalDevice>; 8] = unsafe { mem::zeroed() };
+
+    unsafe {
+        let _enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            vk_physical_devices.as_mut_ptr() as *mut VkPhysicalDevice,
+        );
+    }
+
+    let mut properties = MaybeUninit::uninit();
+
+    let mut physical_device_properties: MaybeUninit<VkPhysicalDeviceProperties> = MaybeUninit::uninit();
+
+    let device = unsafe { vk_physical_devices[0].assume_init() };
+
+    let physical_device_properties = unsafe {
+        vkGetPhysicalDeviceProperties(device, physical_device_properties.as_mut_ptr());
+
+        let device_properties = physical_device_properties.assume_init();
+        device_properties
+    };
+
+    let mut physical_device_properties_2 = VkPhysicalDeviceProperties2 {
+        sType: VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        pNext: properties.as_mut_ptr(),
+        properties: physical_device_properties,
+    };
+
+    dbg!(device);
+
+    dbg!(&physical_device_properties_2);
+
+    // unsafe {
+    //     vkGetPhysicalDeviceProperties2(device, &mut physical_device_properties_2);
+    // }
+
+    dbg!(&physical_device_properties_2);
+
+    unsafe {
+        vkDestroyInstance(vk_instance, null());
+    }
 }
