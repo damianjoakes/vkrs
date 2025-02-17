@@ -16,17 +16,22 @@ pub type VkDeviceAddress = u64;
 
 /// A bitmask representing a collection of flags.
 pub type VkFlags = u32;
+pub type VkInstanceCreateFlags = VkFlags;
+pub type VkDeviceCreateFlags = VkFlags;
+pub type VkDeviceQueueCreateFlags = VkFlags;
+pub type VkSampleCountFlags = VkFlags;
+pub type VkShaderStageFlags = VkFlags;
+pub type VkSubgroupFeatureFlags = VkFlags;
+pub type VkResolveModeFlags = VkFlags;
+
 
 pub type VkBool32 = u32;
 
 /// A 64-bit bitmask representing a collection of flags.
 pub type VkFlags64 = u64;
 
-/// Type alias for VkFlags.
-pub type VkInstanceCreateFlags = VkFlags;
-pub type VkDeviceCreateFlags = VkFlags;
-pub type VkDeviceQueueCreateFlags = VkFlags;
 
+#[allow(non_snake_case, non_camel_case_types)]
 pub mod enums {
     #[repr(transparent)]
     #[derive(Debug)]
@@ -112,7 +117,7 @@ pub mod enums {
     #[repr(transparent)]
     #[derive(Debug)]
     pub struct VkStructureType {
-        bits: i32,
+        pub bits: i32,
     }
 
     impl VkStructureType {
@@ -645,8 +650,9 @@ pub mod enums {
     }
 
     #[repr(transparent)]
+    #[derive(Debug)]
     pub struct VkSystemAllocationScope {
-        bits: i32,
+        pub bits: i32,
     }
 
     impl VkSystemAllocationScope {
@@ -671,8 +677,9 @@ pub mod enums {
     }
 
     #[repr(transparent)]
+    #[derive(Debug)]
     pub struct VkInternalAllocationType {
-        bits: i32,
+        pub bits: i32,
     }
 
     impl VkInternalAllocationType {
@@ -691,8 +698,121 @@ pub mod enums {
             self.bits
         }
     }
+
+    #[repr(transparent)]
+    #[derive(Debug)]
+    pub struct VkSampleCountFlagBits {
+        pub bits: i32,
+    }
+
+    impl VkSampleCountFlagBits {
+        pub const VK_SAMPLE_COUNT_1_BIT: i32 = 0x00000001;
+        pub const VK_SAMPLE_COUNT_2_BIT: i32 = 0x00000002;
+        pub const VK_SAMPLE_COUNT_4_BIT: i32 = 0x00000004;
+        pub const VK_SAMPLE_COUNT_8_BIT: i32 = 0x00000008;
+        pub const VK_SAMPLE_COUNT_16_BIT: i32 = 0x00000010;
+        pub const VK_SAMPLE_COUNT_32_BIT: i32 = 0x00000020;
+        pub const VK_SAMPLE_COUNT_64_BIT: i32 = 0x00000040;
+        pub const VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM: i32 = 0x7FFFFFFF;
+    }
+
+    impl From<i32> for VkSampleCountFlagBits {
+        fn from(bits: i32) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Into<i32> for VkSampleCountFlagBits {
+        fn into(self) -> i32 {
+            self.bits
+        }
+    }
+
+    impl From<i32> for VkVendorId {
+        fn from(bits: i32) -> Self {
+            match bits {
+                0x10000 => Self::VK_VENDOR_ID_KHRONOS,
+                0x10001 => Self::VK_VENDOR_ID_VIV,
+                0x10002 => Self::VK_VENDOR_ID_VSI,
+                0x10003 => Self::VK_VENDOR_ID_KAZAN,
+                0x10004 => Self::VK_VENDOR_ID_CODEPLAY,
+                0x10005 => Self::VK_VENDOR_ID_MESA,
+                0x10006 => Self::VK_VENDOR_ID_POCL,
+                0x10007 => Self::VK_VENDOR_ID_MOBILEYE,
+                _ => Self::UNKNOWN
+            }
+        }
+    }
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub enum VkVendorId {
+        VK_VENDOR_ID_KHRONOS = 0x10000,
+        VK_VENDOR_ID_VIV = 0x10001,
+        VK_VENDOR_ID_VSI = 0x10002,
+        VK_VENDOR_ID_KAZAN = 0x10003,
+        VK_VENDOR_ID_CODEPLAY = 0x10004,
+        VK_VENDOR_ID_MESA = 0x10005,
+        VK_VENDOR_ID_POCL = 0x10006,
+        VK_VENDOR_ID_MOBILEYE = 0x10007,
+        UNKNOWN = 0x00000,
+    }
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub enum VkPhysicalDeviceType {
+        VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
+        VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
+        VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
+        VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
+        VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
+    }
+
+    impl Into<i32> for VkVendorId {
+        fn into(self) -> i32 {
+            match self {
+                VkVendorId::VK_VENDOR_ID_KHRONOS => 0x10000,
+                VkVendorId::VK_VENDOR_ID_VIV => 0x10001,
+                VkVendorId::VK_VENDOR_ID_VSI => 0x10002,
+                VkVendorId::VK_VENDOR_ID_KAZAN => 0x10003,
+                VkVendorId::VK_VENDOR_ID_CODEPLAY => 0x10004,
+                VkVendorId::VK_VENDOR_ID_MESA => 0x10005,
+                VkVendorId::VK_VENDOR_ID_POCL => 0x10006,
+                VkVendorId::VK_VENDOR_ID_MOBILEYE => 0x10007,
+                VkVendorId::UNKNOWN => 0x00000
+            }
+        }
+    }
+
+    #[repr(transparent)]
+    #[derive(Debug)]
+    pub struct VkPointClippingBehavior {
+        pub bits: i32,
+    }
+
+    impl VkPointClippingBehavior {
+        pub const VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES: i32 = 0;
+        pub const VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY: i32 = 1;
+        pub const VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES_KHR: i32 =
+            Self::VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES;
+        pub const VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR: i32 =
+            Self::VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY;
+    }
+
+    impl From<i32> for VkPointClippingBehavior {
+        fn from(bits: i32) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Into<i32> for VkPointClippingBehavior {
+        fn into(self) -> i32 {
+            self.bits
+        }
+    }
 }
 
+#[allow(non_snake_case, non_camel_case_types)]
 pub mod offsets {
     /// Represents a 2D offset.
     #[repr(C)]
@@ -709,6 +829,7 @@ pub mod offsets {
         z: i32,
     }
 }
+#[allow(non_snake_case, non_camel_case_types)]
 
 pub mod extents {
     /// Represents a 2D extent.
@@ -727,6 +848,7 @@ pub mod extents {
     }
 }
 
+#[allow(non_snake_case, non_camel_case_types)]
 pub mod rect {
     //! Contains type definitions for rectangle objects.
     use crate::ffi::c_types::{
@@ -742,6 +864,7 @@ pub mod rect {
     }
 }
 
+#[allow(non_snake_case, non_camel_case_types)]
 pub mod fn_ptrs {
     //! Contains function pointers that may or may not conform with Vulkan's API, but are
     //! The function pointers not defined in the Vulkan API are necessary for FFI
@@ -762,20 +885,6 @@ pub mod fn_ptrs {
 
     /// Macro to simplify creation of function pointers and extern functions which call the
     /// Vulkan API.
-    ///
-    /// This macro should only be used for generating function pointers and function definitions for
-    /// function which need a `vkrs`-scoped return type. These return types are prefixed with
-    /// `PFN_vkrs`, and are used for producing strictly-typed function pointers based on
-    /// Vulkan API functions.
-    ///
-    /// Assume that where a `PFN_vkVoidFunction` is returned, the function pointer type
-    /// created by this will probably be the preferred return value.
-    ///
-    /// It is worth noting that both of these functions are callable, and each will work with the
-    /// same functionality. The pointer function type is provided when library users want to use the
-    /// function returned directly from the calling function. The function itself is used for
-    /// library users who want to use the original Vulkan API names. In these instances, it is up to
-    /// the library user to ensure the prerequisite calling code has been invoked.
     macro_rules! vkrs_create_function_with_typedef {
             (
                 $func_name:ident,
@@ -783,11 +892,9 @@ pub mod fn_ptrs {
                 ($($arg_name:ident : $arg_type:ty),*)
                 -> $ret_type:ty
             ) => {
-                #[allow(non_camel_case_types, non_snake_case)]
                 pub type $ptr_name = unsafe extern "system" fn($($arg_name: $arg_type),*) -> $ret_type;
 
                 unsafe extern "C" {
-                    #[allow(non_camel_case_types, non_snake_case)]
                     pub fn $func_name($($arg_name: $arg_type),*) -> $ret_type;
                 }
             };
@@ -799,7 +906,6 @@ pub mod fn_ptrs {
     ///
     /// This type is mostly a base type used as a placeholder for casting to other function pointer
     /// types.
-    #[allow(non_camel_case_types)]
     pub type PFN_vkVoidFunction = unsafe extern "system" fn();
 
     /// Application-defined memory allocation function
@@ -840,7 +946,6 @@ pub mod fn_ptrs {
     /// VK_ERROR_OUT_OF_HOST_MEMORY as a result of this failed allocation.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkAllocationFunction
-    #[allow(non_camel_case_types, non_snake_case)]
     pub type PFN_vkAllocationFunction = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
@@ -886,7 +991,6 @@ pub mod fn_ptrs {
     /// pfnReallocation must follow the same rules for return values as PFN_vkAllocationFunction.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkReallocationFunction
-    #[allow(non_camel_case_types, non_snake_case)]
     pub type PFN_vkReallocationFunction = unsafe fn(
         pUserData: *mut c_void,
         pOriginal: *mut c_void,
@@ -909,7 +1013,6 @@ pub mod fn_ptrs {
     /// should free this memory.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkFreeFunction
-    #[allow(non_camel_case_types, non_snake_case)]
     pub type PFN_vkFreeFunction = unsafe fn(
         pUserData: *mut c_void,
         pMemory: *mut c_void,
@@ -933,7 +1036,6 @@ pub mod fn_ptrs {
     /// This is a purely informational callback.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalAllocationNotification
-    #[allow(non_camel_case_types, non_snake_case)]
     pub type PFN_vkInternalAllocationNotification = unsafe fn(
         pUserData: *mut c_void,
         size: size_t,
@@ -956,7 +1058,6 @@ pub mod fn_ptrs {
     ///   lifetime of the allocation, as described here.
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#PFN_vkInternalFreeNotification
-    #[allow(non_camel_case_types, non_snake_case)]
     pub type PFN_vkInternalFreeNotification = fn(
         pUserData: *mut c_void,
         size: size_t,
@@ -967,24 +1068,24 @@ pub mod fn_ptrs {
     // Create the definitions for vkEnumerateInstanceVersion.
     vkrs_create_function_with_typedef!(
         vkEnumerateInstanceVersion,
-        PFN_vkrsEnumerateInstanceVersion,
+        PFN_vkEnumerateInstanceVersion,
         (
             p_api_version: *mut u32
         ) -> VkResult
     );
 }
 
-#[allow(non_camel_case_types)]
+#[allow(non_snake_case, non_camel_case_types)]
 pub mod objects {
     use std::ffi::c_void;
 
-    use libc::{c_char};
+    use libc::c_char;
     use paste;
 
-    use crate::ffi::c_types::enums::VkStructureType;
-    use crate::ffi::c_types::fn_ptrs::*;
-
     use super::*;
+    use crate::ffi::c_types::enums::*;
+    use crate::ffi::c_types::fn_ptrs::*;
+    use crate::ffi::constants::*;
 
     /// Equivalent to the C-Style `VK_DEFINE_HANDLE`. This creates a struct with the provided
     /// name, and a type which is a mutable pointer to the underlying struct.
@@ -998,7 +1099,7 @@ pub mod objects {
                 #[repr(C)]
                 #[derive(Debug)]
                 pub struct [<$name _T>] {
-                    _nul: [u8; 64]
+                    _nul: [u8; 0]
                 }
 
                 pub type $name = *mut [<$name _T>];
@@ -1013,8 +1114,9 @@ pub mod objects {
     vk_define_handle!(VkEvent);
 
     /// Object which specifies the current application info.
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_APPLICATION_INFO
     #[repr(C)]
-    #[allow(non_snake_case)]
     pub struct VkApplicationInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1026,8 +1128,9 @@ pub mod objects {
     }
 
     /// Object which specifies the parameters of a newly created instance.
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
     #[repr(C)]
-    #[allow(non_snake_case)]
     #[derive(Debug)]
     pub struct VkInstanceCreateInfo {
         pub sType: VkStructureType,
@@ -1041,6 +1144,8 @@ pub mod objects {
     }
 
     /// Structure specifying parameters of a newly created device queue
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
     ///
     /// # Members
     /// - sType is the type of this structure.
@@ -1062,7 +1167,6 @@ pub mod objects {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkdevicequeuecreateinfo3
     #[repr(C)]
-    #[allow(non_snake_case)]
     pub struct VkDeviceQueueCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1078,7 +1182,6 @@ pub mod objects {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceFeatures
     #[repr(C)]
-    #[allow(non_snake_case)]
     pub struct VkPhysicalDeviceFeatures {
         /// `robustBufferAccess` specifies that accesses to buffers are bounds-checked against the
         /// range of the buffer descriptor (as determined by `VkDescriptorBufferInfo::range`,
@@ -1680,6 +1783,8 @@ pub mod objects {
 
     /// Structure specifying parameters of a newly created device
     ///
+    /// sType must be VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
+    ///
     /// # Members
     /// - sType is the type of this structure.
     ///
@@ -1712,7 +1817,6 @@ pub mod objects {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkdevicecreateinfo3
     #[repr(C)]
-    #[allow(non_snake_case)]
     pub struct VkDeviceCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1753,7 +1857,6 @@ pub mod objects {
     /// function that is called by the implementation when the implementation frees internal
     /// allocations.
     #[repr(C)]
-    #[allow(non_snake_case)]
     pub struct VkAllocationCallbacks {
         pub pUserData: *mut c_void,
         pub pfnAllocation: PFN_vkAllocationFunction,
@@ -1762,4 +1865,1040 @@ pub mod objects {
         pub pfnInternalAllocation: PFN_vkInternalAllocationNotification,
         pub pfnInternalFree: PFN_vkInternalFreeNotification,
     }
+
+    /// Structure specifying physical device sparse memory properties
+    ///
+    /// # todo
+    /// Provide proper documentation for this struct.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceSparseProperties
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceSparseProperties {
+        pub residencyStandard2DBlockShape: VkBool32,
+        pub residencyStandard2DMultisampleBlockShape: VkBool32,
+        pub residencyStandard3DBlockShape: VkBool32,
+        pub residencyAlignedMipSize: VkBool32,
+        pub residencyNonResidentStrict: VkBool32,
+    }
+
+    /// Structure reporting implementation-dependent physical device limits
+    ///
+    /// # todo
+    /// Insert proper documentation for this struct.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceLimits
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceLimits {
+        pub maxImageDimension1D: u32,
+        pub maxImageDimension2D: u32,
+        pub maxImageDimension3D: u32,
+        pub maxImageDimensionCube: u32,
+        pub maxImageArrayLayers: u32,
+        pub maxTexelBufferElements: u32,
+        pub maxUniformBufferRange: u32,
+        pub maxStorageBufferRange: u32,
+        pub maxPushConstantsSize: u32,
+        pub maxMemoryAllocationCount: u32,
+        pub maxSamplerAllocationCount: u32,
+        pub bufferImageGranularity: VkDeviceSize,
+        pub sparseAddressSpaceSize: VkDeviceSize,
+        pub maxBoundDescriptorSets: u32,
+        pub maxPerStageDescriptorSamplers: u32,
+        pub maxPerStageDescriptorUniformBuffers: u32,
+        pub maxPerStageDescriptorStorageBuffers: u32,
+        pub maxPerStageDescriptorSampledImages: u32,
+        pub maxPerStageDescriptorStorageImages: u32,
+        pub maxPerStageDescriptorInputAttachments: u32,
+        pub maxPerStageResources: u32,
+        pub maxDescriptorSetSamplers: u32,
+        pub maxDescriptorSetUniformBuffers: u32,
+        pub maxDescriptorSetUniformBuffersDynamic: u32,
+        pub maxDescriptorSetStorageBuffers: u32,
+        pub maxDescriptorSetStorageBuffersDynamic: u32,
+        pub maxDescriptorSetSampledImages: u32,
+        pub maxDescriptorSetStorageImages: u32,
+        pub maxDescriptorSetInputAttachments: u32,
+        pub maxVertexInputAttributes: u32,
+        pub maxVertexInputBindings: u32,
+        pub maxVertexInputAttributeOffset: u32,
+        pub maxVertexInputBindingStride: u32,
+        pub maxVertexOutputComponents: u32,
+        pub maxTessellationGenerationLevel: u32,
+        pub maxTessellationPatchSize: u32,
+        pub maxTessellationControlPerVertexInputComponents: u32,
+        pub maxTessellationControlPerVertexOutputComponents: u32,
+        pub maxTessellationControlPerPatchOutputComponents: u32,
+        pub maxTessellationControlTotalOutputComponents: u32,
+        pub maxTessellationEvaluationInputComponents: u32,
+        pub maxTessellationEvaluationOutputComponents: u32,
+        pub maxGeometryShaderInvocations: u32,
+        pub maxGeometryInputComponents: u32,
+        pub maxGeometryOutputComponents: u32,
+        pub maxGeometryOutputVertices: u32,
+        pub maxGeometryTotalOutputComponents: u32,
+        pub maxFragmentInputComponents: u32,
+        pub maxFragmentOutputAttachments: u32,
+        pub maxFragmentDualSrcAttachments: u32,
+        pub maxFragmentCombinedOutputResources: u32,
+        pub maxComputeSharedMemorySize: u32,
+        pub maxComputeWorkGroupCount: [u32; 3],
+        pub maxComputeWorkGroupInvocations: u32,
+        pub maxComputeWorkGroupSize: [u32; 3],
+        pub subPixelPrecisionBits: u32,
+        pub subTexelPrecisionBits: u32,
+        pub mipmapPrecisionBits: u32,
+        pub maxDrawIndexedIndexValue: u32,
+        pub maxDrawIndirectCount: u32,
+        pub maxSamplerLodBias: f32,
+        pub maxSamplerAnisotropy: f32,
+        pub maxViewports: u32,
+        pub maxViewportDimensions: [u32; 2],
+        pub viewportBoundsRange: [f32; 2],
+        pub viewportSubPixelBits: u32,
+        pub minMemoryMapAlignment: usize,
+        pub minTexelBufferOffsetAlignment: VkDeviceSize,
+        pub minUniformBufferOffsetAlignment: VkDeviceSize,
+        pub minStorageBufferOffsetAlignment: VkDeviceSize,
+        pub minTexelOffset: i32,
+        pub maxTexelOffset: u32,
+        pub minTexelGatherOffset: i32,
+        pub maxTexelGatherOffset: u32,
+        pub minInterpolationOffset: f32,
+        pub maxInterpolationOffset: f32,
+        pub subPixelInterpolationOffsetBits: u32,
+        pub maxFramebufferWidth: u32,
+        pub maxFramebufferHeight: u32,
+        pub maxFramebufferLayers: u32,
+        pub framebufferColorSampleCounts: VkSampleCountFlags,
+        pub framebufferDepthSampleCounts: VkSampleCountFlags,
+        pub framebufferStencilSampleCounts: VkSampleCountFlags,
+        pub framebufferNoAttachmentsSampleCounts: VkSampleCountFlags,
+        pub maxColorAttachments: u32,
+        pub sampledImageColorSampleCounts: VkSampleCountFlags,
+        pub sampledImageIntegerSampleCounts: VkSampleCountFlags,
+        pub sampledImageDepthSampleCounts: VkSampleCountFlags,
+        pub sampledImageStencilSampleCounts: VkSampleCountFlags,
+        pub storageImageSampleCounts: VkSampleCountFlags,
+        pub maxSampleMaskWords: u32,
+        pub timestampComputeAndGraphics: VkBool32,
+        pub timestampPeriod: f32,
+        pub maxClipDistances: u32,
+        pub maxCullDistances: u32,
+        pub maxCombinedClipAndCullDistances: u32,
+        pub discreteQueuePriorities: u32,
+        pub pointSizeRange: [f32; 2],
+        pub lineWidthRange: [f32; 2],
+        pub pointSizeGranularity: f32,
+        pub lineWidthGranularity: f32,
+        pub strictLines: VkBool32,
+        pub standardSampleLocations: VkBool32,
+        pub optimalBufferCopyOffsetAlignment: VkDeviceSize,
+        pub optimalBufferCopyRowPitchAlignment: VkDeviceSize,
+        pub nonCoherentAtomSize: VkDeviceSize,
+    }
+
+    /// Structure specifying physical device properties
+    ///
+    /// # Members
+    /// - apiVersion is the version of Vulkan supported by the device, encoded as described in
+    ///   https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#extendingvulkan-coreversions-versionnumbers.
+    ///
+    /// - driverVersion is the vendor-specified version of the driver.
+    ///
+    /// - vendorID is a unique identifier for the vendor (see below) of the physical device.
+    ///
+    /// - deviceID is a unique identifier for the physical device among devices available from the vendor.
+    ///
+    /// - deviceType is a VkPhysicalDeviceType specifying the type of device.
+    ///
+    /// - deviceName is an array of VK_MAX_PHYSICAL_DEVICE_NAME_SIZE char containing a null-terminated
+    ///   UTF-8 string which is the name of the device.
+    ///
+    /// - pipelineCacheUUID is an array of VK_UUID_SIZE uint8_t values representing a universally
+    ///   unique identifier for the device.
+    ///
+    /// - limits is the VkPhysicalDeviceLimits structure specifying device-specific limits of the
+    ///   physical device. See Limits for details.
+    ///
+    /// - sparseProperties is the VkPhysicalDeviceSparseProperties structure specifying various sparse
+    ///   related properties of the physical device. See Sparse Properties for details.
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceProperties {
+        pub apiVersion: u32,
+        pub driverVersion: u32,
+        pub vendorID: u32,
+        pub deviceID: u32,
+        pub deviceType: VkPhysicalDeviceType,
+        pub deviceName: [c_char; VK_MAX_PHYSICAL_DEVICE_NAME_SIZE],
+        pub pipelineCacheUUID: [u8; VK_UUID_SIZE],
+        pub limits: VkPhysicalDeviceLimits,
+        pub sparseProperties: VkPhysicalDeviceSparseProperties,
+    }
+
+    /// Structure specifying physical device properties
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2
+    ///
+    /// # Members
+    /// `sType` is the type of this structure.
+    ///
+    /// `pNext` is NULL or a pointer to an extension-specific structure.
+    ///
+    /// `properties` is a VkPhysicalDeviceProperties structure describing properties of the physical
+    /// device. This structure is written with the same values as if it were written by
+    /// vkGetPhysicalDeviceProperties.
+    ///
+    /// # Description
+    /// The `pNext` chain of this structure is used to extend the structure with properties defined
+    /// by extensions.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceProperties2
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceProperties2 {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub properties: VkPhysicalDeviceProperties,
+    }
+
+    pub type VkPhysicalDeviceProperties2KHR = VkPhysicalDeviceProperties2;
+
+    /// Structure specifying physical device properties for functionality promoted to Vulkan 1.1
+    ///
+    /// To query the properties of the driver corresponding to Vulkan 1.1 functionality, add
+    /// `VkPhysicalDeviceVulkan11Properties` to the `pNext` chain of the `VkPhysicalDeviceProperties2`
+    /// structure.
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES
+    ///
+    /// # Members
+    /// `deviceUUID` is an array of VK_UUID_SIZE uint8_t values representing a universally unique
+    /// identifier for the device.
+    ///
+    /// `driverUUID` is an array of VK_UUID_SIZE uint8_t values representing a universally unique
+    /// identifier for the driver build in use by the device.
+    ///
+    /// `deviceLUID` is an array of VK_LUID_SIZE uint8_t values representing a locally unique
+    /// identifier for the device.
+    ///
+    /// `deviceNodeMask` is a uint32_t bitfield identifying the node within a linked device adapter
+    /// corresponding to the device.
+    ///
+    /// `deviceLUIDValid` is a boolean value that will be VK_TRUE if deviceLUID contains a valid LUID
+    /// and deviceNodeMask contains a valid node mask, and VK_FALSE if they do not.
+    ///
+    /// `subgroupSize` is the default number of invocations in each subgroup. subgroupSize is at
+    /// least 1 if any of the physical device’s queues support VK_QUEUE_GRAPHICS_BIT or
+    /// VK_QUEUE_COMPUTE_BIT. subgroupSize is a power-of-two.
+    ///
+    /// `subgroupSupportedStages` is a bitfield of VkShaderStageFlagBits describing the shader stages
+    /// that subgroup operations are supported in. subgroupSupportedStages will have the
+    /// VK_SHADER_STAGE_COMPUTE_BIT bit set if any of the physical device’s queues support
+    /// VK_QUEUE_COMPUTE_BIT.
+    ///
+    /// `subgroupSupportedOperations` is a bitmask of VkSubgroupFeatureFlagBits specifying the sets
+    /// of subgroup operations supported on this device. subgroupSupportedOperations will have the
+    /// VK_SUBGROUP_FEATURE_BASIC_BIT bit set if any of the physical device’s queues support
+    /// VK_QUEUE_GRAPHICS_BIT or VK_QUEUE_COMPUTE_BIT.
+    ///
+    /// `subgroupQuadOperationsInAllStages` is a boolean specifying whether quad subgroup operations
+    /// are available in all stages, or are restricted to fragment and compute stages.
+    ///
+    /// `pointClippingBehavior` is a VkPointClippingBehavior value specifying the point clipping
+    /// behavior supported by the implementation.
+    ///
+    /// `maxMultiviewViewCount` is one greater than the maximum view index that can be used in a
+    /// subpass.
+    ///
+    /// `maxMultiviewInstanceIndex` is the maximum valid value of instance index allowed to be
+    /// generated by a drawing command recorded within a subpass of a multiview render pass
+    /// instance.
+    ///
+    /// `protectedNoFault` specifies the behavior of the implementation when protected memory access
+    /// rules are broken. If protectedNoFault is VK_TRUE, breaking those rules will not result in
+    /// process termination or device loss.
+    ///
+    /// `maxPerSetDescriptors` is a maximum number of descriptors (summed over all descriptor types)
+    /// in a single descriptor set that is guaranteed to satisfy any implementation-dependent
+    /// constraints on the size of a descriptor set itself. Applications can query whether a
+    /// descriptor set that goes beyond this limit is supported using
+    /// vkGetDescriptorSetLayoutSupport.
+    ///
+    /// `maxMemoryAllocationSize` is the maximum size of a memory allocation that can be created,
+    /// even if there is more space available in the heap.
+    ///
+    /// # Description
+    /// The members of VkPhysicalDeviceVulkan11Properties must have the same values as the
+    /// corresponding members of VkPhysicalDeviceIDProperties, VkPhysicalDeviceSubgroupProperties,
+    /// VkPhysicalDevicePointClippingProperties, VkPhysicalDeviceMultiviewProperties,
+    /// VkPhysicalDeviceProtectedMemoryProperties, and VkPhysicalDeviceMaintenance3Properties.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#VkPhysicalDeviceVulkan11Properties
+    #[repr(C)]
+    pub struct VkPhysicalDeviceVulkan11Properties {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub deviceUUID: [u8; VK_UUID_SIZE],
+        pub driverUUID: [u8; VK_UUID_SIZE],
+        pub deviceLUID: [u8; VK_LUID_SIZE],
+        pub deviceNodeMask: u32,
+        pub deviceLUIDValid: VkBool32,
+        pub subgroupSize: u32,
+        pub subgroupSupportedStages: VkShaderStageFlags,
+        pub subgroupSupportedOperations: VkSubgroupFeatureFlags,
+        pub subgroupQuadOperationsInAllStages: VkBool32,
+        pub pointClippingBehavior: VkPointClippingBehavior,
+        pub maxMultiviewViewCount: u32,
+        pub maxMultiviewInstanceIndex: u32,
+        pub protectedNoFault: VkBool32,
+        pub maxPerSetDescriptors: u32,
+        pub maxMemoryAllocationSize: VkDeviceSize,
+    }
+
+    #[repr(C)]
+    pub struct VkConformanceVersion {}
+
+    #[repr(C)]
+    pub struct VkShaderFloatControlsIndependence {}
+
+    /// # todo
+    /// Provide documentation
+    #[repr(C)]
+    pub struct VkDriverId {}
+
+    /// Structure specifying physical device properties for functionality promoted to Vulkan 1.2
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES
+    ///
+    /// To query the properties of the driver corresponding to Vulkan 1.2 functionality, add
+    /// VkPhysicalDeviceVulkan12Properties to the pNext chain of the VkPhysicalDeviceProperties2
+    /// structure.
+    ///
+    /// # Members
+    /// `driverID` is a unique identifier for the driver of the physical device.
+    ///
+    /// `driverName` is an array of VK_MAX_DRIVER_NAME_SIZE_KHR char containing a null-terminated
+    /// UTF-8 string which is the name of the driver.
+    ///
+    /// `driverInfo` is an array of VK_MAX_DRIVER_INFO_SIZE_KHR char containing a null-terminated
+    /// UTF-8 string with additional information about the driver.
+    ///
+    /// `conformanceVersion` is the version of the Vulkan conformance test this driver is conformant
+    /// against (see VkConformanceVersion).
+    ///
+    /// `denormBehaviorIndependence` is a VkShaderFloatControlsIndependence value indicating whether,
+    /// and how, denorm behavior can be set independently for different bit widths.
+    ///
+    /// `roundingModeIndependence` is a VkShaderFloatControlsIndependence value indicating whether,
+    /// and how, rounding modes can be set independently for different bit widths.
+    ///
+    /// `shaderSignedZeroInfNanPreserveFloat16` is a boolean value indicating whether sign of a zero,
+    /// Nans and ±∞ can be preserved in 16-bit floating-point computations. It also indicates
+    /// whether the SignedZeroInfNanPreserve execution mode can be used for 16-bit floating-point
+    /// types.
+    ///
+    /// `shaderSignedZeroInfNanPreserveFloat32` is a boolean value indicating whether sign of a zero,
+    /// Nans and ±∞ can be preserved in 32-bit floating-point computations. It also indicates whether
+    /// the SignedZeroInfNanPreserve execution mode can be used for 32-bit floating-point types.
+    ///
+    /// `shaderSignedZeroInfNanPreserveFloat64` is a boolean value indicating whether sign of a zero,
+    /// Nans and ±∞ can be preserved in 64-bit floating-point computations. It also indicates whether
+    /// yhe SignedZeroInfNanPreserve execution mode can be used for 64-bit floating-point types.
+    ///
+    /// `shaderDenormPreserveFloat16` is a boolean value indicating whether denormals can be preserved
+    /// in 16-bit floating-point computations. It also indicates whether the DenormPreserve execution
+    /// mode can be used for 16-bit floating-point types.
+    ///
+    /// `shaderDenormPreserveFloat32` is a boolean value indicating whether denormals can be preserved
+    /// in 32-bit floating-point computations. It also indicates whether the DenormPreserve execution
+    /// mode can be used for 32-bit floating-point types.
+    ///
+    /// `shaderDenormPreserveFloat64` is a boolean value indicating whether denormals can be preserved
+    /// in 64-bit floating-point computations. It also indicates whether the DenormPreserve execution
+    /// mode can be used for 64-bit floating-point types.
+    ///
+    /// `shaderDenormFlushToZeroFloat16` is a boolean value indicating whether denormals can be
+    /// flushed to zero in 16-bit floating-point computations. It also indicates whether the
+    /// DenormFlushToZero execution mode can be used for 16-bit floating-point types.
+    ///
+    /// `shaderDenormFlushToZeroFloat32` is a boolean value indicating whether denormals can be
+    /// flushed to zero in 32-bit floating-point computations. It also indicates whether the
+    /// DenormFlushToZero execution mode can be used for 32-bit floating-point types.
+    ///
+    /// `shaderDenormFlushToZeroFloat64` is a boolean value indicating whether denormals can be
+    /// flushed to zero in 64-bit floating-point computations. It also indicates whether the
+    /// DenormFlushToZero execution mode can be used for 64-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTEFloat16` is a boolean value indicating whether an implementation
+    /// supports the round-to-nearest-even rounding mode for 16-bit floating-point arithmetic
+    /// nd conversion instructions. It also indicates whether the RoundingModeRTE execution mode
+    /// can be used for 16-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTEFloat32` is a boolean value indicating whether an implementation
+    /// supports the round-to-nearest-even rounding mode for 32-bit floating-point arithmetic
+    /// and conversion instructions. It also indicates whether the RoundingModeRTE execution mode
+    /// can be used for 32-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTEFloat64` is a boolean value indicating whether an implementation
+    /// supports the round-to-nearest-even rounding mode for 64-bit floating-point arithmetic and
+    /// conversion instructions. It also indicates whether the RoundingModeRTE execution mode can
+    /// be used for 64-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTZFloat16` is a boolean value indicating whether an implementation
+    /// supports the round-towards-zero rounding mode for 16-bit floating-point arithmetic and
+    /// conversion instructions. It also indicates whether the RoundingModeRTZ execution mode can
+    /// be used for 16-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTZFloat32` is a boolean value indicating whether an implementation
+    /// supports the round-towards-zero rounding mode for 32-bit floating-point arithmetic and
+    /// conversion instructions. It also indicates whether the RoundingModeRTZ execution mode can
+    /// be used for 32-bit floating-point types.
+    ///
+    /// `shaderRoundingModeRTZFloat64` is a boolean value indicating whether an implementation
+    /// supports the round-towards-zero rounding mode for 64-bit floating-point arithmetic and
+    /// conversion instructions. It also indicates whether the RoundingModeRTZ execution mode can
+    /// be used for 64-bit floating-point types.
+    ///
+    /// `maxUpdateAfterBindDescriptorsInAllPools` is the maximum number of descriptors (summed over
+    /// all descriptor types) that can be created across all pools that are created with the
+    /// VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT bit set. Pool creation may fail when this
+    /// limit is exceeded, or when the space this limit represents is unable to satisfy a pool
+    /// creation due to fragmentation.
+    ///
+    /// `shaderUniformBufferArrayNonUniformIndexingNative` is a boolean value indicating whether
+    /// uniform buffer descriptors natively support nonuniform indexing. If this is VK_FALSE, then
+    /// a single dynamic instance of an instruction that nonuniformly indexes an array of uniform
+    /// buffers may execute multiple times in order to access all the descriptors.
+    ///
+    /// `shaderSampledImageArrayNonUniformIndexingNative` is a boolean value indicating whether
+    /// sampler and image descriptors natively support nonuniform indexing. If this is VK_FALSE,
+    /// then a single dynamic instance of an instruction that nonuniformly indexes an array of
+    /// samplers or images may execute multiple times in order to access all the descriptors.
+    ///
+    /// `shaderStorageBufferArrayNonUniformIndexingNative` is a boolean value indicating whether
+    /// storage buffer descriptors natively support nonuniform indexing. If this is VK_FALSE, then a
+    /// single dynamic instance of an instruction that nonuniformly indexes an array of storage
+    /// buffers may execute multiple times in order to access all the descriptors.
+    ///
+    /// `shaderStorageImageArrayNonUniformIndexingNative` is a boolean value indicating whether
+    /// storage image descriptors natively support nonuniform indexing. If this is VK_FALSE, then a
+    /// single dynamic instance of an instruction that nonuniformly indexes an array of storage
+    /// images may execute multiple times in order to access all the descriptors.
+    ///
+    /// `shaderInputAttachmentArrayNonUniformIndexingNative` is a boolean value indicating whether
+    /// input attachment descriptors natively support nonuniform indexing. If this is VK_FALSE,
+    /// then a single dynamic instance of an instruction that nonuniformly indexes an array of input
+    /// attachments may execute multiple times in order to access all the descriptors.
+    ///
+    /// `robustBufferAccessUpdateAfterBind` is a boolean value indicating whether robustBufferAccess
+    /// can be enabled in a device simultaneously with descriptorBindingUniformBufferUpdateAfterBind,
+    /// descriptorBindingStorageBufferUpdateAfterBind, descriptorBindingUniformTexelBufferUpdateAfterBind,
+    /// and/or descriptorBindingStorageTexelBufferUpdateAfterBind. If this is VK_FALSE, then either
+    /// robustBufferAccess must be disabled or all of these update-after-bind features must be
+    /// disabled.
+    ///
+    /// `quadDivergentImplicitLod` is a boolean value indicating whether implicit level of detail
+    /// calculations for image operations have well-defined results when the image and/or sampler
+    /// objects used for the instruction are not uniform within a quad. See Derivative Image
+    /// Operations.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindSamplers` is similar to maxPerStageDescriptorSamplers
+    /// but counts descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindUniformBuffers` is similar to
+    /// maxPerStageDescriptorUniformBuffers but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindStorageBuffers` is similar to
+    /// maxPerStageDescriptorStorageBuffers but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindSampledImages` is similar to
+    /// maxPerStageDescriptorSampledImages but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindStorageImages` is similar to
+    /// maxPerStageDescriptorStorageImages but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageDescriptorUpdateAfterBindInputAttachments` is similar to
+    /// maxPerStageDescriptorInputAttachments but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxPerStageUpdateAfterBindResources` is similar to maxPerStageResources but counts descriptors
+    /// from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindSamplers` is similar to maxDescriptorSetSamplers but counts
+    /// descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindUniformBuffers` is similar to maxDescriptorSetUniformBuffers
+    /// but counts descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindUniformBuffersDynamic` is similar to
+    /// maxDescriptorSetUniformBuffersDynamic but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindStorageBuffers` is similar to maxDescriptorSetStorageBuffers
+    /// but counts descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindStorageBuffersDynamic` is similar to
+    /// maxDescriptorSetStorageBuffersDynamic but counts descriptors from descriptor sets created
+    /// with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindSampledImages` is similar to maxDescriptorSetSampledImages
+    /// but counts descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindStorageImages` is similar to maxDescriptorSetStorageImages
+    /// but counts descriptors from descriptor sets created with or without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `maxDescriptorSetUpdateAfterBindInputAttachments` is similar to
+    /// maxDescriptorSetInputAttachments but counts descriptors from descriptor sets created with or
+    /// without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set.
+    ///
+    /// `supportedDepthResolveModes` is a bitmask of VkResolveModeFlagBits indicating the set of
+    /// supported depth resolve modes. VK_RESOLVE_MODE_SAMPLE_ZERO_BIT must be included in the set
+    /// but implementations may support additional modes.
+    ///
+    /// `supportedStencilResolveModes` is a bitmask of VkResolveModeFlagBits indicating the set of
+    /// supported stencil resolve modes. VK_RESOLVE_MODE_SAMPLE_ZERO_BIT must be included in the
+    /// set but implementations may support additional modes. VK_RESOLVE_MODE_AVERAGE_BIT must not
+    /// be included in the set.
+    ///
+    /// `independentResolveNone` is VK_TRUE if the implementation supports setting the depth and
+    /// stencil resolve modes to different values when one of those modes is VK_RESOLVE_MODE_NONE.
+    /// Otherwise the implementation only supports setting both modes to the same value.
+    ///
+    /// `independentResolve` is VK_TRUE if the implementation supports all combinations of the
+    /// supported depth and stencil resolve modes, including setting either depth or stencil resolve
+    /// mode to VK_RESOLVE_MODE_NONE. An implementation that supports independentResolve must also
+    /// support independentResolveNone.
+    ///
+    /// `filterMinmaxSingleComponentFormats` is a boolean value indicating whether a minimum set of
+    /// required formats support min/max filtering.
+    ///
+    /// `filterMinmaxImageComponentMapping` is a boolean value indicating whether the implementation
+    /// supports non-identity component mapping of the image when doing min/max filtering.
+    ///
+    /// `maxTimelineSemaphoreValueDifference` indicates the maximum difference allowed by the
+    /// implementation between the current value of a timeline semaphore and any pending signal or
+    /// wait operations.
+    ///
+    /// `framebufferIntegerColorSampleCounts` is a bitmask of VkSampleCountFlagBits indicating the
+    /// color sample counts that are supported for all framebuffer color attachments with integer
+    /// formats.
+    ///
+    /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkphysicaldevicevulkan12properties3
+    #[repr(C)]
+    pub struct VkPhysicalDeviceVulkan12Properties {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub driverID: VkDriverId,
+        pub driverName: [c_char; VK_MAX_DRIVER_NAME_SIZE],
+        pub driverInfo: [c_char; VK_MAX_DRIVER_INFO_SIZE],
+        pub conformanceVersion: VkConformanceVersion,
+        pub denormBehaviorIndependence: VkShaderFloatControlsIndependence,
+        pub roundingModeIndependence: VkShaderFloatControlsIndependence,
+        pub shaderSignedZeroInfNanPreserveFloat16: VkBool32,
+        pub shaderSignedZeroInfNanPreserveFloat32: VkBool32,
+        pub shaderSignedZeroInfNanPreserveFloat64: VkBool32,
+        pub shaderDenormPreserveFloat16: VkBool32,
+        pub shaderDenormPreserveFloat32: VkBool32,
+        pub shaderDenormPreserveFloat64: VkBool32,
+        pub shaderDenormFlushToZeroFloat16: VkBool32,
+        pub shaderDenormFlushToZeroFloat32: VkBool32,
+        pub shaderDenormFlushToZeroFloat64: VkBool32,
+        pub shaderRoundingModeRTEFloat16: VkBool32,
+        pub shaderRoundingModeRTEFloat32: VkBool32,
+        pub shaderRoundingModeRTEFloat64: VkBool32,
+        pub shaderRoundingModeRTZFloat16: VkBool32,
+        pub shaderRoundingModeRTZFloat32: VkBool32,
+        pub shaderRoundingModeRTZFloat64: VkBool32,
+        pub maxUpdateAfterBindDescriptorsInAllPools: u32,
+        pub shaderUniformBufferArrayNonUniformIndexingNative: VkBool32,
+        pub shaderSampledImageArrayNonUniformIndexingNative: VkBool32,
+        pub shaderStorageBufferArrayNonUniformIndexingNative: VkBool32,
+        pub shaderStorageImageArrayNonUniformIndexingNative: VkBool32,
+        pub shaderInputAttachmentArrayNonUniformIndexingNative: VkBool32,
+        pub robustBufferAccessUpdateAfterBind: VkBool32,
+        pub quadDivergentImplicitLod: VkBool32,
+        pub maxPerStageDescriptorUpdateAfterBindSamplers: u32,
+        pub maxPerStageDescriptorUpdateAfterBindUniformBuffers: u32,
+        pub maxPerStageDescriptorUpdateAfterBindStorageBuffers: u32,
+        pub maxPerStageDescriptorUpdateAfterBindSampledImages: u32,
+        pub maxPerStageDescriptorUpdateAfterBindStorageImages: u32,
+        pub maxPerStageDescriptorUpdateAfterBindInputAttachments: u32,
+        pub maxPerStageUpdateAfterBindResources: u32,
+        pub maxDescriptorSetUpdateAfterBindSamplers: u32,
+        pub maxDescriptorSetUpdateAfterBindUniformBuffers: u32,
+        pub maxDescriptorSetUpdateAfterBindUniformBuffersDynamic: u32,
+        pub maxDescriptorSetUpdateAfterBindStorageBuffers: u32,
+        pub maxDescriptorSetUpdateAfterBindStorageBuffersDynamic: u32,
+        pub maxDescriptorSetUpdateAfterBindSampledImages: u32,
+        pub maxDescriptorSetUpdateAfterBindStorageImages: u32,
+        pub maxDescriptorSetUpdateAfterBindInputAttachments: u32,
+        pub supportedDepthResolveModes: VkResolveModeFlags,
+        pub supportedStencilResolveModes: VkResolveModeFlags,
+        pub independentResolveNone: VkBool32,
+        pub independentResolve: VkBool32,
+        pub filterMinmaxSingleComponentFormats: VkBool32,
+        pub filterMinmaxImageComponentMapping: VkBool32,
+        pub maxTimelineSemaphoreValueDifference: u64,
+        pub framebufferIntegerColorSampleCounts: VkSampleCountFlags,
+    }
+
+    /// VkPhysicalDeviceVulkan13Properties
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES
+    /// # Members
+    /// minSubgroupSize is the minimum subgroup size supported by this device. minSubgroupSize is at
+    /// least one if any of the physical device’s queues support VK_QUEUE_GRAPHICS_BIT or
+    /// VK_QUEUE_COMPUTE_BIT. minSubgroupSize is a power-of-two. minSubgroupSize is less than or
+    /// equal to maxSubgroupSize. minSubgroupSize is less than or equal to subgroupSize.
+    ///
+    /// maxSubgroupSize is the maximum subgroup size supported by this device. maxSubgroupSize is at
+    /// least one if any of the physical device’s queues support VK_QUEUE_GRAPHICS_BIT or
+    /// VK_QUEUE_COMPUTE_BIT. maxSubgroupSize is a power-of-two. maxSubgroupSize is greater than or
+    /// equal to minSubgroupSize. maxSubgroupSize is greater than or equal to subgroupSize.
+    ///
+    /// maxComputeWorkgroupSubgroups is the maximum number of subgroups supported by the
+    /// implementation within a workgroup.
+    ///
+    /// requiredSubgroupSizeStages is a bitfield of what shader stages support having a required
+    /// subgroup size specified.
+    ///
+    /// maxInlineUniformBlockSize is the maximum size in bytes of an inline uniform block binding.
+    ///
+    /// maxPerStageDescriptorInlineUniformBlocks is the maximum number of inline uniform block
+    /// bindings that can be accessible to a single shader stage in a pipeline layout. Descriptor
+    /// bindings with a descriptor type of VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK count against
+    /// this limit. Only descriptor bindings in descriptor set layouts created without the
+    /// VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit set count against this limit.
+    ///
+    /// maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks is similar to
+    /// maxPerStageDescriptorInlineUniformBlocks but counts descriptor bindings from descriptor sets
+    /// created with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT bit
+    /// set.
+    ///
+    /// maxDescriptorSetInlineUniformBlocks is the maximum number of inline uniform block bindings
+    /// that can be included in descriptor bindings in a pipeline layout across all pipeline shader
+    /// stages and descriptor set numbers. Descriptor bindings with a descriptor type of
+    /// VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK count against this limit. Only descriptor bindings
+    /// in descriptor set layouts created without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT
+    /// bit set count against this limit.
+    ///
+    /// maxDescriptorSetUpdateAfterBindInlineUniformBlocks is similar to
+    /// maxDescriptorSetInlineUniformBlocks but counts descriptor bindings from descriptor sets
+    /// created with or without the VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT
+    /// bit set.
+    ///
+    /// maxInlineUniformTotalSize is the maximum total size in bytes of all inline uniform block
+    /// bindings, across all pipeline shader stages and descriptor set numbers, that can be
+    /// included in a pipeline layout. Descriptor bindings with a descriptor type of
+    /// VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK count against this limit.
+    ///
+    /// integerDotProduct8BitUnsignedAccelerated is a boolean that will be VK_TRUE if the support
+    /// for 8-bit unsigned dot product operations using the OpUDotKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProduct8BitSignedAccelerated is a boolean that will be VK_TRUE if the support for
+    /// 8-bit signed dot product operations using the OpSDotKHR SPIR-V instruction is accelerated
+    /// as defined below.
+    ///
+    /// integerDotProduct8BitMixedSignednessAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 8-bit mixed signedness dot product operations using the OpSUDotKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct4x8BitPackedUnsignedAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 8-bit unsigned dot product operations from operands packed into 32-bit integers
+    /// using the OpUDotKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct4x8BitPackedSignedAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 8-bit signed dot product operations from operands packed into 32-bit integers
+    /// using the OpSDotKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct4x8BitPackedMixedSignednessAccelerated is a boolean that will be VK_TRUE
+    /// if the support for 8-bit mixed signedness dot product operations from operands packed into
+    /// 32-bit integers using the OpSUDotKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct16BitUnsignedAccelerated is a boolean that will be VK_TRUE if the support for
+    /// 16-bit unsigned dot product operations using the OpUDotKHR SPIR-V instruction is accelerated
+    /// as defined below.
+    ///
+    /// integerDotProduct16BitSignedAccelerated is a boolean that will be VK_TRUE if the support for
+    /// 16-bit signed dot product operations using the OpSDotKHR SPIR-V instruction is accelerated as
+    /// defined below.
+    ///
+    /// integerDotProduct16BitMixedSignednessAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 16-bit mixed signedness dot product operations using the OpSUDotKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct32BitUnsignedAccelerated is a boolean that will be VK_TRUE if the support
+    /// for 32-bit unsigned dot product operations using the OpUDotKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProduct32BitSignedAccelerated is a boolean that will be VK_TRUE if the support
+    /// for 32-bit signed dot product operations using the OpSDotKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProduct32BitMixedSignednessAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 32-bit mixed signedness dot product operations using the OpSUDotKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProduct64BitUnsignedAccelerated is a boolean that will be VK_TRUE if the support
+    /// for 64-bit unsigned dot product operations using the OpUDotKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProduct64BitSignedAccelerated is a boolean that will be VK_TRUE if the support
+    /// for 64-bit signed dot product operations using the OpSDotKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProduct64BitMixedSignednessAccelerated is a boolean that will be VK_TRUE if the
+    /// support for 64-bit mixed signedness dot product operations using the OpSUDotKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating8BitUnsignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 8-bit unsigned accumulating saturating dot product operations
+    /// using the OpUDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating8BitSignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 8-bit signed accumulating saturating dot product operations
+    /// using the OpSDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated is a boolean that
+    /// will be VK_TRUE if the support for 8-bit mixed signedness accumulating saturating dot
+    /// product operations using the OpSUDotAccSatKHR SPIR-V instruction is accelerated as
+    /// defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated is a boolean that
+    /// will be VK_TRUE if the support for 8-bit unsigned accumulating saturating dot product
+    /// operations from operands packed into 32-bit integers using the OpUDotAccSatKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated is a boolean that will
+    /// be VK_TRUE if the support for 8-bit signed accumulating saturating dot product operations
+    /// from operands packed into 32-bit integers using the OpSDotAccSatKHR SPIR-V instruction is
+    /// accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated is a boolean that
+    /// will be VK_TRUE if the support for 8-bit mixed signedness accumulating saturating dot product
+    /// operations from operands packed into 32-bit integers using the OpSUDotAccSatKHR SPIR-V
+    /// instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating16BitUnsignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 16-bit unsigned accumulating saturating dot product operations
+    /// using the OpUDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating16BitSignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 16-bit signed accumulating saturating dot product operations
+    /// using the OpSDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated is a boolean that
+    /// will be VK_TRUE if the support for 16-bit mixed signedness accumulating saturating dot
+    /// product operations using the OpSUDotAccSatKHR SPIR-V instruction is accelerated as
+    /// defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating32BitUnsignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 32-bit unsigned accumulating saturating dot product operations
+    /// using the OpUDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating32BitSignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 32-bit signed accumulating saturating dot product operations
+    /// using the OpSDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated is a boolean that
+    /// will be VK_TRUE if the support for 32-bit mixed signedness accumulating saturating dot
+    /// product operations using the OpSUDotAccSatKHR SPIR-V instruction is accelerated as
+    /// defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating64BitUnsignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 64-bit unsigned accumulating saturating dot product operations
+    /// using the OpUDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating64BitSignedAccelerated is a boolean that will be
+    /// VK_TRUE if the support for 64-bit signed accumulating saturating dot product operations
+    /// using the OpSDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated is a boolean that will
+    /// be VK_TRUE if the support for 64-bit mixed signedness accumulating saturating dot product
+    /// operations using the OpSUDotAccSatKHR SPIR-V instruction is accelerated as defined below.
+    ///
+    /// storageTexelBufferOffsetAlignmentBytes is a byte alignment that is sufficient for a storage
+    /// texel buffer of any format. The value must be a power of two.
+    ///
+    /// storageTexelBufferOffsetSingleTexelAlignment indicates whether single texel alignment is
+    /// sufficient for a storage texel buffer of any format.
+    ///
+    /// uniformTexelBufferOffsetAlignmentBytes is a byte alignment that is sufficient for a uniform
+    /// texel buffer of any format. The value must be a power of two.
+    ///
+    /// uniformTexelBufferOffsetSingleTexelAlignment indicates whether single texel alignment is
+    /// sufficient for a uniform texel buffer of any format.
+    ///
+    /// maxBufferSize is the maximum size VkBuffer that can be created.
+    #[repr(C)]
+    pub struct VkPhysicalDeviceVulkan13Properties {
+        pub sType: VkStructureType,
+        pub pNext: *mut std::ffi::c_void,
+        pub minSubgroupSize: u32,
+        pub maxSubgroupSize: u32,
+        pub maxComputeWorkgroupSubgroups: u32,
+        pub requiredSubgroupSizeStages: VkShaderStageFlags,
+        pub maxInlineUniformBlockSize: u32,
+        pub maxPerStageDescriptorInlineUniformBlocks: u32,
+        pub maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: u32,
+        pub maxDescriptorSetInlineUniformBlocks: u32,
+        pub maxDescriptorSetUpdateAfterBindInlineUniformBlocks: u32,
+        pub maxInlineUniformTotalSize: u32,
+        pub integerDotProduct8BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct8BitSignedAccelerated: VkBool32,
+        pub integerDotProduct8BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedSignedAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct16BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct16BitSignedAccelerated: VkBool32,
+        pub integerDotProduct16BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct32BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct32BitSignedAccelerated: VkBool32,
+        pub integerDotProduct32BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct64BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct64BitSignedAccelerated: VkBool32,
+        pub integerDotProduct64BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated: VkBool32,
+        pub storageTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+        pub storageTexelBufferOffsetSingleTexelAlignment: VkBool32,
+        pub uniformTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+        pub uniformTexelBufferOffsetSingleTexelAlignment: VkBool32,
+        pub maxBufferSize: VkDeviceSize,
+    }
+
+    /// Structure specifying physical device properties for functionality promoted to Vulkan 1.4
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES
+    ///
+    /// # Members
+    /// sType is a VkStructureType value identifying this structure.
+    ///
+    /// pNext is NULL or a pointer to a structure extending this structure.
+    ///
+    /// lineSubPixelPrecisionBits is the number of bits of subpixel precision in framebuffer
+    /// coordinates xf and yf when rasterizing line segments.
+    ///
+    /// maxVertexAttribDivisor is the maximum value of the number of instances that will repeat the
+    /// value of vertex attribute data when instanced rendering is enabled.
+    ///
+    /// supportsNonZeroFirstInstance specifies whether a non-zero value for the firstInstance
+    /// parameter of drawing commands is supported when VkVertexInputBindingDivisorDescription::divisor
+    /// is not 1.
+    ///
+    /// maxPushDescriptors is the maximum number of descriptors that can be used in a descriptor set
+    /// layout created with VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT set.
+    ///
+    /// dynamicRenderingLocalReadDepthStencilAttachments is VK_TRUE if the implementation supports
+    /// local reads of depth/stencil attachments, VK_FALSE otherwise.
+    ///
+    /// dynamicRenderingLocalReadMultisampledAttachments is VK_TRUE if the implementation supports
+    /// local reads of multisampled attachments, VK_FALSE otherwise.
+    ///
+    /// earlyFragmentMultisampleCoverageAfterSampleCounting is a boolean value indicating whether
+    /// the fragment shading and multisample coverage operations are performed after sample
+    /// counting for fragment shaders with EarlyFragmentTests execution mode.
+    ///
+    /// earlyFragmentSampleMaskTestBeforeSampleCounting is a boolean value indicating whether the
+    /// sample mask test operation is performed before sample counting for fragment shaders using the
+    /// EarlyFragmentTests execution mode.
+    ///
+    /// depthStencilSwizzleOneSupport is a boolean indicating that depth/stencil texturing operations
+    /// with VK_COMPONENT_SWIZZLE_ONE have defined behavior.
+    ///
+    /// polygonModePointSize is a boolean value indicating whether the point size of the final
+    /// rasterization of polygons with VK_POLYGON_MODE_POINT is controlled by PointSize.
+    ///
+    /// nonStrictSinglePixelWideLinesUseParallelogram is a boolean value indicating whether
+    /// non-strict lines with a width of 1.0 are rasterized as parallelograms or using Bresenham’s
+    /// algorithm.
+    ///
+    /// nonStrictWideLinesUseParallelogram is a boolean value indicating whether non-strict lines
+    /// with a width greater than 1.0 are rasterized as parallelograms or using Bresenham’s algorithm.
+    ///
+    /// blockTexelViewCompatibleMultipleLayers is a boolean value indicating that an implementation
+    /// supports creating image views with VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT where
+    /// the layerCount member of subresourceRange is greater than 1.
+    ///
+    /// maxCombinedImageSamplerDescriptorCount is the maximum number of combined image sampler
+    /// descriptors that the implementation uses to access any of the formats that require a
+    /// sampler Y′CBCR conversion supported by the implementation.
+    ///
+    /// fragmentShadingRateClampCombinerInputs is a boolean value indicating that an implementation
+    /// clamps the inputs to combiner operations.
+    ///
+    /// defaultRobustnessStorageBuffers describes the behavior of out of bounds accesses made to
+    /// storage buffers when no robustness features are enabled
+    ///
+    /// defaultRobustnessUniformBuffers describes the behavior of out of bounds accesses made to
+    /// uniform buffers when no robustness features are enabled
+    ///
+    /// defaultRobustnessVertexInputs describes the behavior of out of bounds accesses made to
+    /// vertex input attributes when no robustness features are enabled
+    ///
+    /// defaultRobustnessImages describes the behavior of out of bounds accesses made to images
+    /// when no robustness features are enabled
+    ///
+    /// copySrcLayoutCount is an integer related to the number of image layouts for host copies
+    /// from images available or queried, as described below.
+    ///
+    /// pCopySrcLayouts is a pointer to an array of VkImageLayout in which supported image layouts
+    /// for use with host copy operations from images are returned.
+    ///
+    /// copyDstLayoutCount is an integer related to the number of image layouts for host copies to
+    /// images available or queried, as described below.
+    ///
+    /// pCopyDstLayouts is a pointer to an array of VkImageLayout in which supported image layouts
+    /// for use with host copy operations to images are returned.
+    ///
+    /// optimalTilingLayoutUUID is an array of VK_UUID_SIZE uint8_t values representing a universally
+    /// unique identifier for the implementation’s swizzling layout of images created with
+    /// VK_IMAGE_TILING_OPTIMAL.
+    ///
+    /// identicalMemoryTypeRequirements indicates that specifying the VK_IMAGE_USAGE_HOST_TRANSFER_BIT
+    /// flag in VkImageCreateInfo::usage does not affect the memory type requirements of the image.
+    #[repr(C)]
+    pub struct VkPhysicalDeviceVulkan14Properties {
+        pub sType: VkStructureType,
+        pub pNext: *mut std::ffi::c_void,
+        pub lineSubPixelPrecisionBits: u32,
+        pub maxVertexAttribDivisor: u32,
+        pub supportsNonZeroFirstInstance: VkBool32,
+        pub maxPushDescriptors: u32,
+        pub dynamicRenderingLocalReadDepthStencilAttachments: VkBool32,
+        pub dynamicRenderingLocalReadMultisampledAttachments: VkBool32,
+        pub earlyFragmentMultisampleCoverageAfterSampleCounting: VkBool32,
+        pub earlyFragmentSampleMaskTestBeforeSampleCounting: VkBool32,
+        pub depthStencilSwizzleOneSupport: VkBool32,
+        pub polygonModePointSize: VkBool32,
+        pub identicalMemoryTypeRequirements: VkBool32,
+    }
+
+    /// Structure specifying IDs related to the physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES
+    ///
+    /// # Members
+    /// sType is a VkStructureType value identifying this structure.
+    ///
+    /// pNext is NULL or a pointer to a structure extending this structure.
+    ///
+    /// deviceUUID is an array of VK_UUID_SIZE uint8_t values representing a universally unique
+    /// identifier for the device.
+    ///
+    /// driverUUID is an array of VK_UUID_SIZE uint8_t values representing a universally unique
+    /// identifier for the driver build in use by the device.
+    ///
+    /// deviceLUID is an array of VK_LUID_SIZE uint8_t values representing a locally unique
+    /// identifier for the device.
+    ///
+    /// deviceNodeMask is a uint32_t bitfield identifying the node within a linked device adapter
+    /// corresponding to the device.
+    ///
+    /// deviceLUIDValid is a boolean value that will be VK_TRUE if deviceLUID contains a valid LUID
+    /// and deviceNodeMask contains a valid node mask, and VK_FALSE if they do not.
+    ///
+    /// # Description
+    /// If the VkPhysicalDeviceIDProperties structure is included in the pNext chain of the
+    /// VkPhysicalDeviceProperties2 structure passed to vkGetPhysicalDeviceProperties2, it is
+    /// filled in with each corresponding implementation-dependent property.
+    ///
+    /// deviceUUID must be immutable for a given device across instances, processes, driver APIs,
+    /// driver versions, and system reboots.
+    ///
+    /// Applications can compare the driverUUID value across instance and process boundaries, and
+    /// can make similar queries in external APIs to determine whether they are capable of sharing
+    /// memory objects and resources using them with the device.
+    ///
+    /// deviceUUID and/or driverUUID must be used to determine whether a particular external object
+    /// can be shared between driver components, where such a restriction exists as defined in the
+    /// compatibility table for the particular object type:
+    ///
+    /// - External memory handle types compatibility
+    ///
+    /// - External semaphore handle types compatibility
+    ///
+    /// - External fence handle types compatibility
+    ///
+    /// If deviceLUIDValid is VK_FALSE, the values of deviceLUID and deviceNodeMask are undefined.
+    /// If deviceLUIDValid is VK_TRUE and Vulkan is running on the Windows operating system, the
+    /// contents of deviceLUID can be cast to an LUID object and must be equal to the locally unique
+    /// identifier of a IDXGIAdapter1 object that corresponds to physicalDevice. If deviceLUIDValid
+    /// is VK_TRUE, deviceNodeMask must contain exactly one bit. If Vulkan is running on an operating
+    /// system that supports the Direct3D 12 API and physicalDevice corresponds to an individual
+    /// device in a linked device adapter, deviceNodeMask identifies the Direct3D 12 node
+    /// corresponding to physicalDevice. Otherwise, deviceNodeMask must be 1.
+    ///
+    /// > *Note*
+    /// > Although they have identical descriptions, VkPhysicalDeviceIDProperties::deviceUUID may
+    /// > differ from VkPhysicalDeviceProperties2::pipelineCacheUUID. The former is intended to
+    /// > identify and correlate devices across API and driver boundaries, while the latter is used
+    /// > to identify a compatible device and driver combination to use when serializing and
+    /// > de-serializing pipeline state.
+    /// >
+    /// > Implementations should return deviceUUID values which are likely to be unique even in the
+    /// > presence of multiple Vulkan implementations (such as a GPU driver and a software renderer;
+    /// > two drivers for different GPUs; or the same Vulkan driver running on two logically
+    /// > different devices).
+    /// >
+    /// > Khronos' conformance testing is unable to guarantee that deviceUUID values are actually
+    /// > unique, so implementors should make their own best efforts to ensure this. In particular,
+    /// > hard-coded deviceUUID values, especially all-0 bits, should never be used.
+    /// >
+    /// > A combination of values unique to the vendor, the driver, and the hardware environment can
+    /// > be used to provide a deviceUUID which is unique to a high degree of certainty. Some possible
+    /// > inputs to such a computation are:
+    /// >
+    /// > - Information reported by vkGetPhysicalDeviceProperties
+    /// >
+    /// > - PCI device ID (if defined)
+    /// >
+    /// > - PCI bus ID, or similar system configuration information.
+    /// >
+    /// > - Driver binary checksums.
+    ///
+    /// > Note
+    /// > While VkPhysicalDeviceIDProperties::deviceUUID is specified to remain consistent across
+    /// > driver versions and system reboots, it is not intended to be usable as a serializable
+    /// > persistent identifier for a device. It may change when a device is physically added to,
+    /// > removed from, or moved to a different connector in a system while that system is powered
+    /// > down. Further, there is no reasonable way to verify with conformance testing that a given
+    /// > device retains the same UUID in a given system across all driver versions supported in that
+    /// > system. While implementations should make every effort to report consistent device UUIDs
+    /// > across driver versions, applications should avoid relying on the persistence of this value
+    /// > for uses other than identifying compatible devices for external object sharing purposes.
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceIDProperties.html
+    #[repr(C)]
+    pub struct VkPhysicalDeviceIDProperties {
+        sType: VkStructureType,
+        pNext: *mut c_void,
+        deviceUUID: u8,
+        driverUUID: u8,
+        deviceLUID: u8,
+        deviceNodeMask: u32,
+        deviceLUIDValid: VkBool32,
+    }
+
+    pub type VkPhysicalDeviceIDPropertiesKHR = VkPhysicalDeviceIDProperties;
 }
