@@ -1,10 +1,10 @@
 use crate::ffi::c_types::enums::VkStructureType;
 use crate::ffi::c_types::fn_ptrs::PFN_vkEnumerateInstanceVersion;
-use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice, VkPhysicalDeviceProperties, VkPhysicalDeviceProperties2};
-use crate::ffi::functions::{vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr, vkGetPhysicalDeviceProperties};
+use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice, VkPhysicalDevicePCIBusInfoPropertiesEXT, VkPhysicalDeviceProperties, VkPhysicalDeviceProperties2};
+use crate::ffi::functions::{vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr, vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceProperties2};
 use crate::vkrs_get_instance_proc_addr_ext;
 use libc::c_char;
-use std::ffi::{CStr, CString};
+use std::ffi::{c_void, CStr, CString};
 use std::mem;
 use std::mem::MaybeUninit;
 use std::ptr::{null, null_mut};
@@ -259,8 +259,6 @@ fn vk_get_physical_device_properties_test() {
 
 #[test]
 fn vk_get_physical_device_properties_2_test() {
-    let enable_extension_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
-    let enable_layer_names: [*const c_char; 0] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     let vk_create_instance_info = VkInstanceCreateInfo {
         flags: 0x00000001,
@@ -269,8 +267,8 @@ fn vk_get_physical_device_properties_2_test() {
         pNext: null(),
         pApplicationInfo: null(),
         sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        ppEnabledExtensionNames: enable_extension_names.as_ptr(),
-        ppEnabledLayerNames: enable_layer_names.as_ptr(),
+        ppEnabledExtensionNames: null(),
+        ppEnabledLayerNames: null(),
     };
 
     // Create an empty, uninitialized slice of memory for the Vulkan instance.
@@ -279,13 +277,11 @@ fn vk_get_physical_device_properties_2_test() {
     unsafe {
         // SAFETY: since the uninitialized memory is being used safely, this function will initialize
         // the slice of memory at which the VkInstance will sit.
-        let result = vkCreateInstance(
+        let _result = vkCreateInstance(
             &vk_create_instance_info,
             null(),
             vk_instance.as_mut_ptr(),
         );
-
-        println!("{:?}", result);
     }
 
     let vk_instance = unsafe {
@@ -315,7 +311,15 @@ fn vk_get_physical_device_properties_2_test() {
         );
     }
 
-    let mut properties = MaybeUninit::uninit();
+
+    let mut device_pci_properties = VkPhysicalDevicePCIBusInfoPropertiesEXT {
+        sType: VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT,
+        pNext: null_mut(),
+        pciDomain: 0,
+        pciBus: 0,
+        pciDevice: 0,
+        pciFunction: 0,
+    };
 
     let mut physical_device_properties: MaybeUninit<VkPhysicalDeviceProperties> = MaybeUninit::uninit();
 
@@ -328,21 +332,20 @@ fn vk_get_physical_device_properties_2_test() {
         device_properties
     };
 
+    // This isn't supported by my driver, so this test was useless. The implementation is working
+    // now, though.
     let mut physical_device_properties_2 = VkPhysicalDeviceProperties2 {
         sType: VkStructureType::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
-        pNext: properties.as_mut_ptr(),
+        pNext: std::ptr::from_mut(&mut device_pci_properties) as *mut c_void,
         properties: physical_device_properties,
     };
 
-    dbg!(device);
+    unsafe {
+        vkGetPhysicalDeviceProperties2(device, &mut physical_device_properties_2);
+    }
 
     dbg!(&physical_device_properties_2);
-
-    // unsafe {
-    //     vkGetPhysicalDeviceProperties2(device, &mut physical_device_properties_2);
-    // }
-
-    dbg!(&physical_device_properties_2);
+    dbg!(&device_pci_properties);
 
     unsafe {
         vkDestroyInstance(vk_instance, null());

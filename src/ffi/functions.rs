@@ -70,10 +70,6 @@ unsafe extern "C" {
     /// `pProperties` is a pointer to a VkPhysicalDeviceProperties structure in which properties are returned
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#vkGetPhysicalDeviceProperties2
-    ///
-    /// # todo
-    /// This currently isn't working properly. Our tests are providing a access violation. We need
-    /// to review this and come back to it.
     pub fn vkGetPhysicalDeviceProperties2(
         physicalDevice: VkPhysicalDevice,
         pProperties: *mut VkPhysicalDeviceProperties2
