@@ -810,6 +810,71 @@ pub mod enums {
             self.bits
         }
     }
+
+
+    /// Khronos driver IDs
+    ///
+    /// # todo
+    /// Provide documentation
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkDriverId {
+        pub bits: i32
+    }
+
+    impl VkDriverId {
+        pub const VK_DRIVER_ID_AMD_PROPRIETARY: VkDriverId = VkDriverId { bits: 1 };
+        pub const VK_DRIVER_ID_AMD_OPEN_SOURCE: VkDriverId = VkDriverId { bits: 2 };
+        pub const VK_DRIVER_ID_MESA_RADV: VkDriverId = VkDriverId { bits: 3 };
+        pub const VK_DRIVER_ID_NVIDIA_PROPRIETARY: VkDriverId = VkDriverId { bits: 4 };
+        pub const VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS: VkDriverId = VkDriverId { bits: 5 };
+        pub const VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA: VkDriverId = VkDriverId { bits: 6 };
+        pub const VK_DRIVER_ID_IMAGINATION_PROPRIETARY: VkDriverId = VkDriverId { bits: 7 };
+        pub const VK_DRIVER_ID_QUALCOMM_PROPRIETARY: VkDriverId = VkDriverId { bits: 8 };
+        pub const VK_DRIVER_ID_ARM_PROPRIETARY: VkDriverId = VkDriverId { bits: 9 };
+        pub const VK_DRIVER_ID_GOOGLE_SWIFTSHADER: VkDriverId = VkDriverId { bits: 10 };
+        pub const VK_DRIVER_ID_GGP_PROPRIETARY: VkDriverId = VkDriverId { bits: 11 };
+        pub const VK_DRIVER_ID_BROADCOM_PROPRIETARY: VkDriverId = VkDriverId { bits: 12 };
+        pub const VK_DRIVER_ID_MESA_LLVMPIPE: VkDriverId = VkDriverId { bits: 13 };
+        pub const VK_DRIVER_ID_MOLTENVK: VkDriverId = VkDriverId { bits: 14 };
+        pub const VK_DRIVER_ID_COREAVI_PROPRIETARY: VkDriverId = VkDriverId { bits: 15 };
+        pub const VK_DRIVER_ID_JUICE_PROPRIETARY: VkDriverId = VkDriverId { bits: 16 };
+        pub const VK_DRIVER_ID_VERISILICON_PROPRIETARY: VkDriverId = VkDriverId { bits: 17 };
+        pub const VK_DRIVER_ID_MESA_TURNIP: VkDriverId = VkDriverId { bits: 18 };
+        pub const VK_DRIVER_ID_MESA_V3DV: VkDriverId = VkDriverId { bits: 19 };
+        pub const VK_DRIVER_ID_MESA_PANVK: VkDriverId = VkDriverId { bits: 20 };
+        pub const VK_DRIVER_ID_SAMSUNG_PROPRIETARY: VkDriverId = VkDriverId { bits: 21 };
+        pub const VK_DRIVER_ID_MESA_VENUS: VkDriverId = VkDriverId { bits: 22 };
+        pub const VK_DRIVER_ID_MESA_DOZEN: VkDriverId = VkDriverId { bits: 23 };
+        pub const VK_DRIVER_ID_MESA_NVK: VkDriverId = VkDriverId { bits: 24 };
+        pub const VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA: VkDriverId = VkDriverId { bits: 25 };
+        pub const VK_DRIVER_ID_MESA_HONEYKRISP: VkDriverId = VkDriverId { bits: 26 };
+        pub const VK_DRIVER_ID_VULKAN_SC_EMULATION_ON_VULKAN: VkDriverId = VkDriverId { bits: 27 };
+        pub const VK_DRIVER_ID_AMD_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_AMD_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_AMD_OPEN_SOURCE_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_AMD_OPEN_SOURCE.bits };
+        pub const VK_DRIVER_ID_MESA_RADV_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_MESA_RADV.bits };
+        pub const VK_DRIVER_ID_NVIDIA_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_NVIDIA_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS.bits };
+        pub const VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA.bits };
+        pub const VK_DRIVER_ID_IMAGINATION_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_IMAGINATION_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_QUALCOMM_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_QUALCOMM_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_ARM_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_ARM_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_GOOGLE_SWIFTSHADER_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_GOOGLE_SWIFTSHADER.bits };
+        pub const VK_DRIVER_ID_GGP_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_GGP_PROPRIETARY.bits };
+        pub const VK_DRIVER_ID_BROADCOM_PROPRIETARY_KHR: VkDriverId = VkDriverId { bits: Self::VK_DRIVER_ID_BROADCOM_PROPRIETARY.bits };
+    }
+
+    impl From<i32> for VkDriverId {
+        fn from(bits: i32) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Into<i32> for VkDriverId {
+        fn into(self) -> i32 {
+            self.bits
+        }
+    }
 }
 
 #[allow(non_snake_case, non_camel_case_types)]
@@ -1138,7 +1203,7 @@ pub mod objects {
         pub flags: VkInstanceCreateFlags,
         pub pApplicationInfo: *const VkApplicationInfo,
         pub enabledLayerCount: u32,
-        pub ppEnabledLayerNames: *const *const c_char,
+        pub ppEnabledLayerNames: *const *const core::ffi::c_char,
         pub enabledExtensionCount: u32,
         pub ppEnabledExtensionNames: *const *const c_char,
     }
@@ -2158,16 +2223,26 @@ pub mod objects {
         pub maxMemoryAllocationSize: VkDeviceSize,
     }
 
-    #[repr(C)]
-    pub struct VkConformanceVersion {}
-
-    #[repr(C)]
-    pub struct VkShaderFloatControlsIndependence {}
-
+    /// Structure containing the conformance test suite version the implementation is compliant with
+    ///
     /// # todo
-    /// Provide documentation
+    /// Finish documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkConformanceVersion.html
     #[repr(C)]
-    pub struct VkDriverId {}
+    #[derive(Debug)]
+    pub struct VkConformanceVersion {
+        major: u8,
+        minor: u8,
+        subminor: u8,
+        patch: u8
+    }
+
+    pub type VkConformanceVersionKHR = VkConformanceVersion;
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkShaderFloatControlsIndependence {}
 
     /// Structure specifying physical device properties for functionality promoted to Vulkan 1.2
     ///
@@ -2399,6 +2474,7 @@ pub mod objects {
     ///
     /// https://vulkan.lunarg.com/doc/view/latest/windows/apispec.html#_vkphysicaldevicevulkan12properties3
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkPhysicalDeviceVulkan12Properties {
         pub sType: VkStructureType,
         pub pNext: *mut c_void,
@@ -2646,6 +2722,7 @@ pub mod objects {
     ///
     /// maxBufferSize is the maximum size VkBuffer that can be created.
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkPhysicalDeviceVulkan13Properties {
         pub sType: VkStructureType,
         pub pNext: *mut std::ffi::c_void,
@@ -2778,6 +2855,7 @@ pub mod objects {
     /// identicalMemoryTypeRequirements indicates that specifying the VK_IMAGE_USAGE_HOST_TRANSFER_BIT
     /// flag in VkImageCreateInfo::usage does not affect the memory type requirements of the image.
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkPhysicalDeviceVulkan14Properties {
         pub sType: VkStructureType,
         pub pNext: *mut std::ffi::c_void,
@@ -2890,15 +2968,54 @@ pub mod objects {
     ///
     /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceIDProperties.html
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkPhysicalDeviceIDProperties {
-        sType: VkStructureType,
-        pNext: *mut c_void,
-        deviceUUID: u8,
-        driverUUID: u8,
-        deviceLUID: u8,
-        deviceNodeMask: u32,
-        deviceLUIDValid: VkBool32,
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub deviceUUID: u8,
+        pub driverUUID: u8,
+        pub deviceLUID: u8,
+        pub deviceNodeMask: u32,
+        pub deviceLUIDValid: VkBool32,
     }
 
     pub type VkPhysicalDeviceIDPropertiesKHR = VkPhysicalDeviceIDProperties;
+
+    /// Structure containing driver identification information
+    ///
+    /// sType **must** be `VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES`
+    ///
+    /// # todo
+    /// Finish implementing documentation.
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceDriverProperties.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceDriverProperties {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub driverID: VkDriverId,
+        pub driverName: [c_char; VK_MAX_DRIVER_NAME_SIZE],
+        pub driverInfo: [c_char; VK_MAX_DRIVER_INFO_SIZE],
+        pub conformanceVersion: VkConformanceVersion
+    }
+
+    /// Structure containing PCI bus information of a physical device
+    ///
+    /// # todo
+    /// Finish documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDevicePCIBusInfoPropertiesEXT.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDevicePCIBusInfoPropertiesEXT {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub pciDomain: u32,
+        pub pciBus: u32,
+        pub pciDevice: u32,
+        pub pciFunction: u32,
+    }
+
+
 }
