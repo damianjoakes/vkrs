@@ -1,7 +1,7 @@
 use crate::ffi::c_types::enums::VkStructureType;
 use crate::ffi::c_types::fn_ptrs::PFN_vkEnumerateInstanceVersion;
-use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice, VkPhysicalDevicePCIBusInfoPropertiesEXT, VkPhysicalDeviceProperties, VkPhysicalDeviceProperties2};
-use crate::ffi::functions::{vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr, vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceProperties2};
+use crate::ffi::c_types::objects::{VkApplicationInfo, VkInstance, VkInstanceCreateInfo, VkPhysicalDevice, VkPhysicalDevicePCIBusInfoPropertiesEXT, VkPhysicalDeviceProperties, VkPhysicalDeviceProperties2, VkQueueFamilyProperties};
+use crate::ffi::functions::{vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices, vkGetInstanceProcAddr, vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceProperties2, vkGetPhysicalDeviceQueueFamilyProperties};
 use crate::vkrs_get_instance_proc_addr_ext;
 use libc::c_char;
 use std::ffi::{c_void, CStr, CString};
@@ -55,7 +55,7 @@ fn vk_get_instance_proc_test() {
         );
     }
 
-    let mut vk_instance = unsafe { vk_instance.assume_init() };
+    let vk_instance = unsafe { vk_instance.assume_init() };
 
     let pfn = unsafe {
         vkrs_get_instance_proc_addr_ext!(
@@ -259,7 +259,6 @@ fn vk_get_physical_device_properties_test() {
 
 #[test]
 fn vk_get_physical_device_properties_2_test() {
-
     let vk_create_instance_info = VkInstanceCreateInfo {
         flags: 0x00000001,
         enabledExtensionCount: 0,
@@ -349,5 +348,89 @@ fn vk_get_physical_device_properties_2_test() {
 
     unsafe {
         vkDestroyInstance(vk_instance, null());
+    }
+}
+
+#[test]
+fn vk_get_physical_device_queue_family_properties_test() {
+    let vk_create_instance_info = VkInstanceCreateInfo {
+        flags: 0x00000001,
+        enabledExtensionCount: 0,
+        enabledLayerCount: 0,
+        pNext: null(),
+        pApplicationInfo: null(),
+        sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        ppEnabledExtensionNames: null(),
+        ppEnabledLayerNames: null(),
+    };
+
+    // Create an empty, uninitialized slice of memory for the Vulkan instance.
+    let mut vk_instance: MaybeUninit<VkInstance> = MaybeUninit::uninit();
+
+    unsafe {
+        // SAFETY: since the uninitialized memory is being used safely, this function will initialize
+        // the slice of memory at which the VkInstance will sit.
+        let _result = vkCreateInstance(
+            &vk_create_instance_info,
+            null(),
+            vk_instance.as_mut_ptr(),
+        );
+    }
+
+    let vk_instance = unsafe {
+        // SAFETY: This code is unreachable if the VkInstance wasn't previously initialized.
+        vk_instance.assume_init()
+    };
+
+    let mut physical_device_count = 0u32;
+
+    unsafe {
+        let _enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            null_mut(), // pass in a null value, so we can get the device count first before enumerating the devices.
+        );
+    }
+
+    // Create an empty, uninitialized slice of memory for the physical devices.
+    // Using mem::zeroed here, so that we can zero-fill enough space in memory for the devices.
+    let mut vk_physical_devices: [MaybeUninit<VkPhysicalDevice>; 8] = unsafe { mem::zeroed() };
+
+    unsafe {
+        let _enumerate_result = vkEnumeratePhysicalDevices(
+            vk_instance,
+            &mut physical_device_count,
+            vk_physical_devices.as_mut_ptr() as *mut VkPhysicalDevice,
+        );
+    }
+
+    let device = unsafe { vk_physical_devices[0].assume_init() };
+    let mut queue_family_count = 0u32;
+
+    unsafe {
+        vkGetPhysicalDeviceQueueFamilyProperties(
+            device,
+            &mut queue_family_count,
+            null_mut()
+        );
+    }
+
+    // SAFE since we're not doing any reading.
+    let mut queue_families: [MaybeUninit<VkQueueFamilyProperties>; 6] = unsafe { mem::zeroed() };
+
+    dbg!(&queue_family_count);
+
+    unsafe {
+        vkGetPhysicalDeviceQueueFamilyProperties(
+            device,
+            &mut queue_family_count,
+            queue_families.as_mut_ptr() as *mut VkQueueFamilyProperties
+        );
+    }
+
+    for qf in queue_families {
+        unsafe {
+            dbg!(qf.assume_init());
+        }
     }
 }

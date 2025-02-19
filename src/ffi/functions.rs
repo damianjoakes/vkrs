@@ -152,6 +152,24 @@ unsafe extern "C" {
         pPhysicalDevices: *mut VkPhysicalDevice
     ) -> VkResult;
 
+    /// Reports properties of the queues of the specified physical device
+    ///
+    /// # Parameters
+    /// physicalDevice is the handle to the physical device whose properties will be queried.
+    ///
+    /// pQueueFamilyPropertyCount is a pointer to an integer related to the number of queue families
+    /// available or queried, as described below.
+    ///
+    /// pQueueFamilyProperties is either NULL or a pointer to an array of VkQueueFamilyProperties
+    /// structures.
+    ///
+    /// # todo Documentation
+    pub fn vkGetPhysicalDeviceQueueFamilyProperties(
+        physicalDevice: VkPhysicalDevice,
+        pQueueFamilyPropertyCount: *mut u32,
+        pQueueFamilyProperties: *mut VkQueueFamilyProperties
+    );
+
     pub fn vkResetEvent(
         device: VkDevice,
         event: VkEvent,
