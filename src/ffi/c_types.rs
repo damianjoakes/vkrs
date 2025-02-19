@@ -23,12 +23,15 @@ pub type VkSampleCountFlags = VkFlags;
 pub type VkShaderStageFlags = VkFlags;
 pub type VkSubgroupFeatureFlags = VkFlags;
 pub type VkResolveModeFlags = VkFlags;
+pub type VkQueueFlags = VkFlags;
 
 
 pub type VkBool32 = u32;
 
 /// A 64-bit bitmask representing a collection of flags.
 pub type VkFlags64 = u64;
+pub type VkPhysicalDeviceSchedulingControlsFlagBitsARM = VkFlags64;
+pub type VkPhysicalDeviceSchedulingControlsFlagsARM = VkFlags64;
 
 
 #[allow(non_snake_case, non_camel_case_types)]
@@ -875,6 +878,32 @@ pub mod enums {
             self.bits
         }
     }
+
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub enum VkLayeredDriverUnderlyingApiMSFT {
+        VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT = 0,
+        VK_LAYERED_DRIVER_UNDERLYING_API_D3D12_MSFT = 1,
+
+    }
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub enum VkQueueFlagBits {
+        K_QUEUE_GRAPHICS_BIT = 0x00000001,
+        VK_QUEUE_COMPUTE_BIT = 0x00000002,
+        VK_QUEUE_TRANSFER_BIT = 0x00000004,
+        VK_QUEUE_SPARSE_BINDING_BIT = 0x00000008,
+        /// Provided by VK_VERSION_1_1
+        VK_QUEUE_PROTECTED_BIT = 0x00000010,
+        /// Provided by VK_KHR_video_decode_queue
+        VK_QUEUE_VIDEO_DECODE_BIT_KHR = 0x00000020,
+        /// Provided by VK_KHR_video_encode_queue
+        VK_QUEUE_VIDEO_ENCODE_BIT_KHR = 0x00000040,
+        /// Provided by VK_NV_optical_flow
+        VK_QUEUE_OPTICAL_FLOW_BIT_NV = 0x00000100,
+    }
 }
 
 #[allow(non_snake_case, non_camel_case_types)]
@@ -899,6 +928,7 @@ pub mod offsets {
 pub mod extents {
     /// Represents a 2D extent.
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkExtent2D {
         width: u32,
         height: u32,
@@ -906,6 +936,7 @@ pub mod extents {
 
     /// Represents a 3D extent.
     #[repr(C)]
+    #[derive(Debug)]
     pub struct VkExtent3D {
         width: u32,
         height: u32,
@@ -1149,6 +1180,7 @@ pub mod objects {
 
     use super::*;
     use crate::ffi::c_types::enums::*;
+    use crate::ffi::c_types::extents::{VkExtent2D, VkExtent3D};
     use crate::ffi::c_types::fn_ptrs::*;
     use crate::ffi::constants::*;
 
@@ -3002,6 +3034,8 @@ pub mod objects {
 
     /// Structure containing PCI bus information of a physical device
     ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT
+    ///
     /// # todo
     /// Finish documentation
     ///
@@ -3017,5 +3051,180 @@ pub mod objects {
         pub pciFunction: u32,
     }
 
+    /// Structure containing DRM information of a physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT
+    ///
+    /// Extension `VK_EXT_physical_device_drm` must be enabled.
+    ///
+    /// # todo
+    /// Finish documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceDrmPropertiesEXT.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceDrmPropertiesEXT {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub hasPrimary: VkBool32,
+        pub hasRender: VkBool32,
+        pub primaryMajor: i32,
+        pub primaryMinor: i32,
+        pub renderMajor: i32,
+        pub renderMinor: i32,
+    }
 
+    /// Structure containing information about integer dot product support for a physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES
+    ///
+    /// VK_KHR_shader_integer_dot_product extension must be enabled
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceShaderIntegerDotProductProperties.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceShaderIntegerDotProductProperties {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub integerDotProduct8BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct8BitSignedAccelerated: VkBool32,
+        pub integerDotProduct8BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedSignedAccelerated: VkBool32,
+        pub integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct16BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct16BitSignedAccelerated: VkBool32,
+        pub integerDotProduct16BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct32BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct32BitSignedAccelerated: VkBool32,
+        pub integerDotProduct32BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProduct64BitUnsignedAccelerated: VkBool32,
+        pub integerDotProduct64BitSignedAccelerated: VkBool32,
+        pub integerDotProduct64BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating16BitUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating16BitSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating32BitUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating32BitSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating64BitUnsignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating64BitSignedAccelerated: VkBool32,
+        pub integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: VkBool32,
+
+    }
+
+    pub type VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR =
+        VkPhysicalDeviceShaderIntegerDotProductProperties;
+
+    /// Structure containing image processing properties
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM
+    ///
+    /// Provided by `VK_QCOM_image_processing`
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceImageProcessingPropertiesQCOM.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceImageProcessingPropertiesQCOM {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub maxWeightFilterPhases: u32,
+        pub maxWeightFilterDimension: VkExtent2D,
+        pub maxBlockMatchRegion: VkExtent2D,
+        pub maxBoxFilterBlockSize: VkExtent2D,
+    }
+
+    /// Structure containing information about tile image support for a physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT
+    ///
+    /// Provided by `VK_EXT_shader_tile_image`
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceShaderTileImagePropertiesEXT.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceShaderTileImagePropertiesEXT {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub shaderTileImageCoherentReadAccelerated: VkBool32,
+        pub shaderTileImageReadSampleFromPixelRateInvocation: VkBool32,
+        pub shaderTileImageReadFromHelperInvocation: VkBool32,
+    }
+
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM
+    ///
+    /// Structure containing image processing2 properties
+    ///
+    /// Provided by VK_QCOM_image_processing2
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceImageProcessing2PropertiesQCOM.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceImageProcessing2PropertiesQCOM {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub maxBlockMatchWindow: VkExtent2D,
+    }
+
+    /// Structure containing information about driver layering for a physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT
+    ///
+    /// Provided by `VK_MSFT_layered_driver`
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceLayeredDriverPropertiesMSFT.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceLayeredDriverPropertiesMSFT {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub underlyingAPI: VkLayeredDriverUnderlyingApiMSFT,
+    }
+
+    /// Structure containing scheduling control properties of a physical device
+    ///
+    /// sType must be VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM
+    ///
+    /// Provided by `VK_ARM_scheduling_controls`
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceSchedulingControlsPropertiesARM.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkPhysicalDeviceSchedulingControlsPropertiesARM {
+        pub sType: VkStructureType,
+        pub pNext: *mut c_void,
+        pub schedulingControlsFlags: VkPhysicalDeviceSchedulingControlsFlagsARM
+    }
+
+    /// Structure providing information about a queue family
+    ///
+    /// # todo Documentation
+    ///
+    /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkQueueFamilyProperties.html
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct VkQueueFamilyProperties {
+        queueFlags: VkQueueFlags,
+        queueCount: u32,
+        timestampValidBits: u32,
+        minImageTransferGranularity: VkExtent3D
+    }
 }

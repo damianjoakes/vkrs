@@ -1,3 +1,5 @@
+use crate::ffi::c_types::VkPhysicalDeviceSchedulingControlsFlagBitsARM;
+
 pub const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE: usize = 256;
 
 /// VK_MAX_DRIVER_NAME_SIZE is the length in char values of an array containing a driver name string,
@@ -30,3 +32,5 @@ pub const VK_MAX_DEVICE_GROUP_SIZE: usize = 32;
 /// Equivalent to VK_MAX_DEVICE_GROUP_SIZE.
 pub const VK_MAX_DEVICE_GROUP_SIZE_KHR: usize = VK_MAX_DEVICE_GROUP_SIZE;
 
+pub static VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_SHADER_CORE_COUNT_ARM:
+VkPhysicalDeviceSchedulingControlsFlagBitsARM = 0x00000001;
